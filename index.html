@@ -1168,21 +1168,80 @@
             Array.from(files).forEach(file => {
                 // Check if it's an image file or DNG file
                 if (file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.dng')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        selectedPhotos.push({
-                            name: file.name,
-                            data: e.target.result,
-                            type: file.type || 'application/octet-stream',
-                            isRaw: file.name.toLowerCase().endsWith('.dng')
-                        });
-                        updatePhotoPreview();
-                    };
-                    reader.readAsDataURL(file);
+                    if (file.name.toLowerCase().endsWith('.dng')) {
+                        // Handle DNG files (no compression needed for raw files)
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            selectedPhotos.push({
+                                name: file.name,
+                                data: e.target.result,
+                                type: file.type || 'application/octet-stream',
+                                isRaw: true
+                            });
+                            updatePhotoPreview();
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        // Compress regular image files
+                        compressImage(file);
+                    }
                 } else {
                     alert(`❌ Unsupported file type: ${file.name}. Please upload JPG, PNG, WebP, or DNG files.`);
                 }
             });
+        }
+
+        function compressImage(file) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = function() {
+                // Calculate new dimensions (max 1200px width/height)
+                let { width, height } = img;
+                const maxSize = 1200;
+                
+                if (width > height) {
+                    if (width > maxSize) {
+                        height = (height * maxSize) / width;
+                        width = maxSize;
+                    }
+                } else {
+                    if (height > maxSize) {
+                        width = (width * maxSize) / height;
+                        height = maxSize;
+                    }
+                }
+                
+                // Set canvas size
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Draw and compress image
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Convert to compressed JPEG (0.7 quality)
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                
+                selectedPhotos.push({
+                    name: file.name.replace(/\.[^/.]+$/, '.jpg'), // Change extension to .jpg
+                    data: compressedDataUrl,
+                    type: 'image/jpeg',
+                    isRaw: false,
+                    originalSize: file.size,
+                    compressedSize: compressedDataUrl.length
+                });
+                
+                updatePhotoPreview();
+                
+                // Show compression info if significant
+                const compressionRatio = ((file.size - compressedDataUrl.length) / file.size * 100).toFixed(1);
+                if (compressionRatio > 50) {
+                    console.log(`Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedDataUrl.length / 1024 / 1024).toFixed(2)}MB (${compressionRatio}% reduction)`);
+                }
+            };
+            
+            img.src = URL.createObjectURL(file);
         }
 
         function updatePhotoPreview() {
@@ -1199,10 +1258,16 @@
                         </div>
                     `;
                 } else {
-                    // Show regular image preview
+                    // Show regular image preview with size info
+                    const sizeInfo = photo.originalSize ? 
+                        `<div style="position: absolute; bottom: 2px; left: 2px; background: rgba(0,0,0,0.7); color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 4px;">
+                            ${(photo.data.length / 1024 / 1024).toFixed(1)}MB
+                        </div>` : '';
+                    
                     return `
                         <div style="position: relative;">
                             <img src="${photo.data}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                            ${sizeInfo}
                             <button type="button" onclick="removePhoto(${index})" style="position: absolute; top: -5px; right: -5px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
                         </div>
                     `;
@@ -1256,6 +1321,18 @@
                 return;
             }
             
+            // Check payload size before saving
+            const recordSize = JSON.stringify(record).length;
+            const maxSize = 10000000; // 10MB limit (leaving some buffer)
+            
+            if (recordSize > maxSize) {
+                const sizeMB = (recordSize / 1024 / 1024).toFixed(2);
+                alert(`❌ Record too large (${sizeMB}MB). Please reduce the number or size of photos. Maximum size is 10MB.`);
+                return;
+            }
+            
+            console.log(`Saving record: ${(recordSize / 1024 / 1024).toFixed(2)}MB`);
+            
             db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(record.id)
                 .set(record)
                 .then(() => {
@@ -1271,7 +1348,11 @@
                 })
                 .catch((error) => {
                     console.error('Error saving record:', error);
-                    alert('❌ Failed to save record. Please try again.');
+                    if (error.message.includes('payload size exceeds the limit')) {
+                        alert('❌ Record too large. Please reduce the number or size of photos and try again.');
+                    } else {
+                        alert('❌ Failed to save record. Please try again.');
+                    }
                 });
         }
 
