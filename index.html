@@ -1285,7 +1285,7 @@
                             ${record.description.substring(0, 100)}${record.description.length > 100 ? '...' : ''}
                         </div>
                         <div style="margin-top: 10px;">
-                            <button onclick="deleteRecord(${record.id})" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s ease;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
+                            <button onclick="deleteRecord('${record.id}')" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s ease;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
                                 🗑️ Delete
                             </button>
                         </div>
@@ -1318,7 +1318,7 @@
                         ${record.description}
                     </div>
                     <div style="margin-top: 15px;">
-                        <button onclick="deleteRecord(${record.id})" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
+                        <button onclick="deleteRecord('${record.id}')" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
                             🗑️ Delete Record
                         </button>
                     </div>
@@ -1387,17 +1387,23 @@
 
         // Delete record functionality
         function deleteRecord(recordId) {
+            console.log('Attempting to delete record:', recordId);
             const record = records.find(r => r.id === recordId);
-            if (!record) return;
+            if (!record) {
+                console.log('Record not found:', recordId);
+                return;
+            }
             
             const confirmMessage = `Are you sure you want to delete this record?\n\nStaff: ${record.staffMember}\nLocation: ${record.location}\nDate: ${formatDate(record.date)}\n\nThis action cannot be undone.`;
             
             if (confirm(confirmMessage)) {
                 // Delete from Firebase
                 if (currentUser && isFirebaseInitialized) {
-                    db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(recordId.toString())
+                    console.log('Deleting from Firebase:', recordId);
+                    db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(recordId)
                         .delete()
                         .then(() => {
+                            console.log('Successfully deleted from Firebase');
                             // Remove from local records
                             records = records.filter(r => r.id !== recordId);
                             
@@ -1413,6 +1419,7 @@
                             alert('❌ Failed to delete record. Please try again.');
                         });
                 } else {
+                    console.log('Deleting locally only');
                     // Fallback for non-authenticated users
                     records = records.filter(r => r.id !== recordId);
                     updateDashboard();
