@@ -717,8 +717,8 @@
                     <label>Upload Photos (Optional)</label>
                     <div class="photo-upload" onclick="document.getElementById('photo-input').click()">
                         <p>📸 Click to upload photos or drag & drop</p>
-                        <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">Supports: JPG, PNG, WebP</p>
-                        <input type="file" id="photo-input" multiple accept="image/*" style="display: none;">
+                        <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">Supports: JPG, PNG, WebP, DNG (Raw)</p>
+                        <input type="file" id="photo-input" multiple accept="image/*,.dng" style="display: none;">
                     </div>
                     <div id="photo-preview" style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
                 </div>
@@ -1166,28 +1166,48 @@
 
         function handleFiles(files) {
             Array.from(files).forEach(file => {
-                if (file.type.startsWith('image/')) {
+                // Check if it's an image file or DNG file
+                if (file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.dng')) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         selectedPhotos.push({
                             name: file.name,
-                            data: e.target.result
+                            data: e.target.result,
+                            type: file.type || 'application/octet-stream',
+                            isRaw: file.name.toLowerCase().endsWith('.dng')
                         });
                         updatePhotoPreview();
                     };
                     reader.readAsDataURL(file);
+                } else {
+                    alert(`❌ Unsupported file type: ${file.name}. Please upload JPG, PNG, WebP, or DNG files.`);
                 }
             });
         }
 
         function updatePhotoPreview() {
             const preview = document.getElementById('photo-preview');
-            preview.innerHTML = selectedPhotos.map((photo, index) => `
-                <div style="position: relative;">
-                    <img src="${photo.data}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                    <button type="button" onclick="removePhoto(${index})" style="position: absolute; top: -5px; right: -5px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
-                </div>
-            `).join('');
+            preview.innerHTML = selectedPhotos.map((photo, index) => {
+                if (photo.isRaw) {
+                    // Show placeholder for DNG/RAW files
+                    return `
+                        <div style="position: relative;">
+                            <div style="width: 80px; height: 80px; background: linear-gradient(45deg, #667eea, #764ba2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                                📷 RAW<br>${photo.name.split('.').pop().toUpperCase()}
+                            </div>
+                            <button type="button" onclick="removePhoto(${index})" style="position: absolute; top: -5px; right: -5px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
+                        </div>
+                    `;
+                } else {
+                    // Show regular image preview
+                    return `
+                        <div style="position: relative;">
+                            <img src="${photo.data}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                            <button type="button" onclick="removePhoto(${index})" style="position: absolute; top: -5px; right: -5px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
+                        </div>
+                    `;
+                }
+            }).join('');
         }
 
         function removePhoto(index) {
@@ -1289,7 +1309,15 @@
                                 🗑️ Delete
                             </button>
                         </div>
-                        ${record.photos.length > 0 ? `<div class="timeline-photos">${record.photos.map(photo => `<img src="${photo.data}" class="timeline-photo" onclick="openModal('${photo.data}')">`).join('')}</div>` : ''}
+                        ${record.photos.length > 0 ? `<div class="timeline-photos">${record.photos.map(photo => {
+                            if (photo.isRaw) {
+                                return `<div class="timeline-photo" style="background: linear-gradient(45deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; text-align: center; cursor: pointer;" onclick="openModal('${photo.data}', '${photo.name}')" title="${photo.name}">
+                                    📷 RAW<br>${photo.name.split('.').pop().toUpperCase()}
+                                </div>`;
+                            } else {
+                                return `<img src="${photo.data}" class="timeline-photo" onclick="openModal('${photo.data}')" title="${photo.name}">`;
+                            }
+                        }).join('')}</div>` : ''}
                     </div>
                 `).join('');
             }
@@ -1324,7 +1352,15 @@
                     </div>
                     ${record.photos.length > 0 ? `
                         <div class="timeline-photos">
-                            ${record.photos.map(photo => `<img src="${photo.data}" class="timeline-photo" onclick="openModal('${photo.data}')" title="${photo.name}">`).join('')}
+                            ${record.photos.map(photo => {
+                                if (photo.isRaw) {
+                                    return `<div class="timeline-photo" style="background: linear-gradient(45deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; text-align: center; cursor: pointer;" onclick="openModal('${photo.data}', '${photo.name}')" title="${photo.name}">
+                                        📷 RAW<br>${photo.name.split('.').pop().toUpperCase()}
+                                    </div>`;
+                                } else {
+                                    return `<img src="${photo.data}" class="timeline-photo" onclick="openModal('${photo.data}')" title="${photo.name}">`;
+                                }
+                            }).join('')}
                         </div>
                     ` : ''}
                 </div>
@@ -1350,13 +1386,41 @@
         }
 
         // Modal functionality
-        function openModal(imageSrc) {
-            document.getElementById('modal-image').src = imageSrc;
-            document.getElementById('photo-modal').style.display = 'block';
+        function openModal(imageSrc, fileName = '') {
+            const modal = document.getElementById('photo-modal');
+            
+            if (fileName.toLowerCase().endsWith('.dng')) {
+                // For DNG files, show a placeholder since browsers can't display them
+                modal.innerHTML = `
+                    <div class="modal-content" style="background: white; padding: 40px; text-align: center; max-width: 500px;">
+                        <div style="font-size: 4rem; margin-bottom: 20px;">📷</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">Raw Image File</h3>
+                        <p style="color: #666; margin-bottom: 20px;">${fileName}</p>
+                        <p style="color: #666; font-size: 0.9rem;">This is a DNG (Digital Negative) raw image file. Raw files contain unprocessed image data and cannot be displayed directly in the browser.</p>
+                        <button onclick="closeModal()" class="btn" style="margin-top: 20px;">Close</button>
+                    </div>
+                `;
+            } else {
+                // For regular images, show the image
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <img id="modal-image" src="${imageSrc}" alt="Full size photo">
+                    </div>
+                `;
+            }
+            
+            modal.style.display = 'block';
         }
 
         function closeModal() {
-            document.getElementById('photo-modal').style.display = 'none';
+            const modal = document.getElementById('photo-modal');
+            modal.style.display = 'none';
+            // Restore original modal structure
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <img id="modal-image" src="" alt="Full size photo">
+                </div>
+            `;
         }
 
         // Export functionality
