@@ -1176,7 +1176,8 @@
                                 name: file.name,
                                 data: e.target.result,
                                 type: file.type || 'application/octet-stream',
-                                isRaw: true
+                                isRaw: true,
+                                processing: false
                             });
                             updatePhotoPreview();
                         };
@@ -1192,6 +1193,17 @@
         }
 
         function compressImage(file) {
+            // Add a placeholder while processing
+            const placeholderIndex = selectedPhotos.length;
+            selectedPhotos.push({
+                name: file.name,
+                data: '',
+                type: 'image/jpeg',
+                isRaw: false,
+                processing: true
+            });
+            updatePhotoPreview();
+            
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             const img = new Image();
@@ -1223,14 +1235,16 @@
                 // Convert to compressed JPEG (0.7 quality)
                 const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
                 
-                selectedPhotos.push({
+                // Update the placeholder with the compressed image
+                selectedPhotos[placeholderIndex] = {
                     name: file.name.replace(/\.[^/.]+$/, '.jpg'), // Change extension to .jpg
                     data: compressedDataUrl,
                     type: 'image/jpeg',
                     isRaw: false,
                     originalSize: file.size,
-                    compressedSize: compressedDataUrl.length
-                });
+                    compressedSize: compressedDataUrl.length,
+                    processing: false
+                };
                 
                 updatePhotoPreview();
                 
@@ -1241,13 +1255,30 @@
                 }
             };
             
+            img.onerror = function() {
+                // Handle image loading error
+                selectedPhotos.splice(placeholderIndex, 1);
+                updatePhotoPreview();
+                alert(`❌ Failed to process image: ${file.name}`);
+            };
+            
             img.src = URL.createObjectURL(file);
         }
 
         function updatePhotoPreview() {
             const preview = document.getElementById('photo-preview');
             preview.innerHTML = selectedPhotos.map((photo, index) => {
-                if (photo.isRaw) {
+                if (photo.processing) {
+                    // Show processing indicator
+                    return `
+                        <div style="position: relative;">
+                            <div style="width: 80px; height: 80px; background: linear-gradient(45deg, #ffc107, #ff9800); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                                ⏳<br>Processing
+                            </div>
+                            <button type="button" onclick="removePhoto(${index})" style="position: absolute; top: -5px; right: -5px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
+                        </div>
+                    `;
+                } else if (photo.isRaw) {
                     // Show placeholder for DNG/RAW files
                     return `
                         <div style="position: relative;">
@@ -1281,11 +1312,18 @@
         }
 
         // Form submission
-        document.getElementById('record-form').addEventListener('submit', function(e) {
+        document.getElementById('record-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             if (!currentUser) {
                 alert('❌ Please sign in to save records');
+                return;
+            }
+            
+            // Check if photos are still being processed
+            const processingPhotos = selectedPhotos.filter(photo => photo.processing);
+            if (processingPhotos.length > 0) {
+                alert('⏳ Please wait for photos to finish processing before saving.');
                 return;
             }
             
@@ -1303,7 +1341,7 @@
             };
             
             // Save to Firebase
-            saveRecordToFirebase(record);
+            await saveRecordToFirebase(record);
             
             // Reset form
             this.reset();
@@ -1315,7 +1353,7 @@
             document.querySelector('.nav-btn').classList.add('active');
         });
 
-        function saveRecordToFirebase(record) {
+        async function saveRecordToFirebase(record) {
             if (!currentUser || !isFirebaseInitialized) {
                 alert('❌ Please sign in to save records');
                 return;
@@ -1333,27 +1371,29 @@
             
             console.log(`Saving record: ${(recordSize / 1024 / 1024).toFixed(2)}MB`);
             
-            db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(record.id)
-                .set(record)
-                .then(() => {
-                    // Add to local records
-                    records.unshift(record);
-                    
-                    // Update displays
-                    updateDashboard();
-                    updateTimeline();
-                    
-                    // Show success message
-                    alert('✅ Record saved successfully!');
-                })
-                .catch((error) => {
-                    console.error('Error saving record:', error);
-                    if (error.message.includes('payload size exceeds the limit')) {
-                        alert('❌ Record too large. Please reduce the number or size of photos and try again.');
-                    } else {
-                        alert('❌ Failed to save record. Please try again.');
-                    }
-                });
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(record.id).set(record);
+                
+                // Add to local records
+                records.unshift(record);
+                
+                // Update displays
+                updateDashboard();
+                updateTimeline();
+                
+                // Show success message
+                alert('✅ Record saved successfully!');
+                
+                return true;
+            } catch (error) {
+                console.error('Error saving record:', error);
+                if (error.message.includes('payload size exceeds the limit')) {
+                    alert('❌ Record too large. Please reduce the number or size of photos and try again.');
+                } else {
+                    alert('❌ Failed to save record. Please try again.');
+                }
+                throw error;
+            }
         }
 
         // Dashboard updates
