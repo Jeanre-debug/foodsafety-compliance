@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Safety Manager</title>
     
-            <!-- Firebase SDK -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-app-compat.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-firestore-compat.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-storage-compat.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-auth-compat.min.js"></script>
+                <!-- Firebase SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-firestore-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-storage-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-auth-compat.min.js"></script>
+    
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
         * {
@@ -734,7 +738,11 @@
         <div id="timeline" class="section">
             <h2 style="margin-bottom: 25px; color: #2c3e50;">📋 Compliance Timeline</h2>
             
-            <input type="text" class="search-box" id="search-input" placeholder="🔍 Search records by staff, location, category, or description...">
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                <input type="text" class="search-box" id="search-input" placeholder="🔍 Search records by staff, location, category, or description..." style="flex: 1; min-width: 300px;">
+                <button type="button" class="btn" onclick="exportToPDF()" style="background: linear-gradient(45deg, #28a745, #20c997);">📄 Export to PDF</button>
+                <button type="button" class="btn" onclick="toggleMassDelete()" style="background: linear-gradient(45deg, #dc3545, #c82333);">🗑️ Mass Delete</button>
+            </div>
             
             <div class="timeline" id="timeline-container">
                 <p style="text-align: center; color: #666; padding: 40px;">No records found. Start by adding your first compliance record.</p>
@@ -1099,6 +1107,257 @@
             }
         }
 
+        // Mass Delete Functions
+        function toggleMassDelete() {
+            const checkboxes = document.querySelectorAll('.mass-delete-checkbox');
+            const massDeleteBtn = document.querySelector('button[onclick="toggleMassDelete()"]');
+            
+            if (checkboxes[0].style.display === 'none') {
+                // Enable mass delete mode
+                checkboxes.forEach(cb => cb.style.display = 'block');
+                massDeleteBtn.textContent = '✅ Confirm Delete';
+                massDeleteBtn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                updateMassDeleteButton();
+            } else {
+                // Execute mass delete
+                const selectedRecords = getSelectedRecords();
+                if (selectedRecords.length === 0) {
+                    alert('❌ Please select at least one record to delete.');
+                    return;
+                }
+                
+                const confirmMessage = `Are you sure you want to delete ${selectedRecords.length} record(s)?\n\nThis action cannot be undone.`;
+                if (confirm(confirmMessage)) {
+                    massDeleteRecords(selectedRecords);
+                }
+            }
+        }
+
+        function getSelectedRecords() {
+            const checkboxes = document.querySelectorAll('.mass-delete-checkbox input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.id.replace('select-', ''));
+        }
+
+        function updateMassDeleteButton() {
+            const selectedCount = getSelectedRecords().length;
+            const massDeleteBtn = document.querySelector('button[onclick="toggleMassDelete()"]');
+            
+            if (selectedCount > 0) {
+                massDeleteBtn.textContent = `✅ Delete ${selectedCount} Record(s)`;
+            } else {
+                massDeleteBtn.textContent = '✅ Confirm Delete';
+            }
+        }
+
+        async function massDeleteRecords(recordIds) {
+            if (!currentUser || !isFirebaseInitialized) {
+                alert('❌ Please sign in to delete records');
+                return;
+            }
+
+            const batch = db.batch();
+            
+            for (const recordId of recordIds) {
+                const docRef = db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(recordId);
+                batch.delete(docRef);
+            }
+
+            try {
+                await batch.commit();
+                
+                // Remove from local records
+                records = records.filter(r => !recordIds.includes(r.id));
+                
+                // Update displays
+                updateDashboard();
+                updateTimeline();
+                
+                // Reset mass delete mode
+                const checkboxes = document.querySelectorAll('.mass-delete-checkbox');
+                checkboxes.forEach(cb => cb.style.display = 'none');
+                const massDeleteBtn = document.querySelector('button[onclick="toggleMassDelete()"]');
+                massDeleteBtn.textContent = '🗑️ Mass Delete';
+                massDeleteBtn.style.background = 'linear-gradient(45deg, #dc3545, #c82333)';
+                
+                alert(`✅ Successfully deleted ${recordIds.length} record(s)!`);
+                
+            } catch (error) {
+                console.error('Error deleting records:', error);
+                alert('❌ Failed to delete some records. Please try again.');
+            }
+        }
+
+        // PDF Export Functions
+        async function exportToPDF() {
+            if (!currentUser) {
+                alert('❌ Please sign in to export data');
+                return;
+            }
+
+            if (records.length === 0) {
+                alert('❌ No records to export');
+                return;
+            }
+
+            // Show loading message
+            const exportBtn = document.querySelector('button[onclick="exportToPDF()"]');
+            const originalText = exportBtn.textContent;
+            exportBtn.textContent = '⏳ Generating PDF...';
+            exportBtn.disabled = true;
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                
+                // Add header
+                doc.setFillColor(102, 126, 234);
+                doc.rect(0, 0, 210, 30, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(24);
+                doc.text('Food Safety Manager', 105, 15, { align: 'center' });
+                doc.setFontSize(12);
+                doc.text(`Report generated on ${new Date().toLocaleDateString()}`, 105, 25, { align: 'center' });
+                
+                // Add user info
+                doc.setTextColor(44, 62, 80);
+                doc.setFontSize(10);
+                doc.text(`User: ${currentUser.email}`, 20, 40);
+                doc.text(`Total Records: ${records.length}`, 20, 45);
+                
+                let yPosition = 60;
+                let pageNumber = 1;
+                
+                for (let i = 0; i < records.length; i++) {
+                    const record = records[i];
+                    
+                    // Check if we need a new page
+                    if (yPosition > 250) {
+                        doc.addPage();
+                        pageNumber++;
+                        yPosition = 20;
+                    }
+                    
+                    // Record header
+                    doc.setFillColor(102, 126, 234, 0.1);
+                    doc.rect(15, yPosition - 5, 180, 8, 'F');
+                    doc.setTextColor(102, 126, 234);
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`Record ${i + 1}`, 20, yPosition);
+                    
+                    yPosition += 15;
+                    
+                    // Record details
+                    doc.setTextColor(44, 62, 80);
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'normal');
+                    
+                    doc.text(`Date: ${formatDate(record.date)}`, 20, yPosition);
+                    yPosition += 6;
+                    doc.text(`Category: ${getCategoryName(record.category)}`, 20, yPosition);
+                    yPosition += 6;
+                    doc.text(`Priority: ${record.priority.toUpperCase()}`, 20, yPosition);
+                    yPosition += 6;
+                    doc.text(`Staff: ${record.staffMember}`, 20, yPosition);
+                    yPosition += 6;
+                    doc.text(`Location: ${record.location}`, 20, yPosition);
+                    yPosition += 8;
+                    
+                    // Description
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Description:', 20, yPosition);
+                    yPosition += 6;
+                    doc.setFont(undefined, 'normal');
+                    
+                    const descriptionLines = doc.splitTextToSize(record.description, 170);
+                    doc.text(descriptionLines, 20, yPosition);
+                    yPosition += descriptionLines.length * 4;
+                    
+                    // Photos
+                    if (record.photos && record.photos.length > 0) {
+                        yPosition += 5;
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Photos:', 20, yPosition);
+                        yPosition += 6;
+                        doc.setFont(undefined, 'normal');
+                        
+                        for (let j = 0; j < record.photos.length; j++) {
+                            const photo = record.photos[j];
+                            
+                            if (yPosition > 200) {
+                                doc.addPage();
+                                pageNumber++;
+                                yPosition = 20;
+                            }
+                            
+                            if (photo.isRaw) {
+                                // Placeholder for RAW files
+                                doc.setFillColor(102, 126, 234, 0.1);
+                                doc.rect(20, yPosition, 40, 30, 'F');
+                                doc.setTextColor(102, 126, 234);
+                                doc.setFontSize(8);
+                                doc.text('RAW', 30, yPosition + 15, { align: 'center' });
+                                doc.text(photo.name.split('.').pop().toUpperCase(), 30, yPosition + 25, { align: 'center' });
+                                doc.text(photo.name, 70, yPosition + 15);
+                            } else {
+                                try {
+                                    // Add image to PDF
+                                    const img = new Image();
+                                    img.crossOrigin = 'anonymous';
+                                    
+                                    await new Promise((resolve, reject) => {
+                                        img.onload = resolve;
+                                        img.onerror = reject;
+                                        img.src = photo.data;
+                                    });
+                                    
+                                    const canvas = document.createElement('canvas');
+                                    const ctx = canvas.getContext('2d');
+                                    canvas.width = img.width;
+                                    canvas.height = img.height;
+                                    ctx.drawImage(img, 0, 0);
+                                    
+                                    const imgData = canvas.toDataURL('image/jpeg', 0.8);
+                                    doc.addImage(imgData, 'JPEG', 20, yPosition, 40, 30);
+                                    doc.setTextColor(44, 62, 80);
+                                    doc.setFontSize(8);
+                                    doc.text(photo.name, 70, yPosition + 15);
+                                    
+                                } catch (error) {
+                                    console.error('Error adding image to PDF:', error);
+                                    doc.setTextColor(220, 53, 69);
+                                    doc.text('Image could not be loaded', 70, yPosition + 15);
+                                }
+                            }
+                            
+                            yPosition += 35;
+                        }
+                    }
+                    
+                    yPosition += 10;
+                    
+                    // Add page number
+                    doc.setFontSize(8);
+                    doc.setTextColor(128, 128, 128);
+                    doc.text(`Page ${pageNumber}`, 105, 290, { align: 'center' });
+                }
+                
+                // Save the PDF
+                const fileName = `safety-records-${currentUser.email}-${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+                
+                alert('✅ PDF exported successfully!');
+                
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('❌ Failed to generate PDF. Please try again.');
+            } finally {
+                // Restore button
+                exportBtn.textContent = originalText;
+                exportBtn.disabled = false;
+            }
+        }
+
 
 
         function updateFirebaseStatus(connected, message) {
@@ -1455,35 +1714,42 @@
             
             container.innerHTML = records.map(record => `
                 <div class="timeline-item" data-record-id="${record.id}">
-                    <div class="timeline-date">${formatDate(record.date)}</div>
-                    <div class="timeline-category category-${record.category}">${getCategoryIcon(record.category)} ${getCategoryName(record.category)}</div>
-                    <div style="display: inline-block; padding: 3px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: 600; margin-left: 10px; background: ${getPriorityColor(record.priority)}20; color: ${getPriorityColor(record.priority)};">
-                        ${getPriorityIcon(record.priority)} ${record.priority.toUpperCase()}
-                    </div>
-                    <div class="timeline-content" style="margin-top: 15px;">
-                        <strong>Staff:</strong> ${record.staffMember}<br>
-                        <strong>Location:</strong> ${record.location}<br><br>
-                        <strong>Details:</strong><br>
-                        ${record.description}
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <button onclick="deleteRecord('${record.id}')" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
-                            🗑️ Delete Record
-                        </button>
-                    </div>
-                    ${record.photos.length > 0 ? `
-                        <div class="timeline-photos">
-                            ${record.photos.map(photo => {
-                                if (photo.isRaw) {
-                                    return `<div class="timeline-photo" style="background: linear-gradient(45deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; text-align: center; cursor: pointer;" onclick="openModal('${photo.data}', '${photo.name}')" title="${photo.name}">
-                                        📷 RAW<br>${photo.name.split('.').pop().toUpperCase()}
-                                    </div>`;
-                                } else {
-                                    return `<img src="${photo.data}" class="timeline-photo" onclick="openModal('${photo.data}')" title="${photo.name}">`;
-                                }
-                            }).join('')}
+                    <div style="display: flex; align-items: flex-start; gap: 15px;">
+                        <div style="flex: 1;">
+                            <div class="timeline-date">${formatDate(record.date)}</div>
+                            <div class="timeline-category category-${record.category}">${getCategoryIcon(record.category)} ${getCategoryName(record.category)}</div>
+                            <div style="display: inline-block; padding: 3px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: 600; margin-left: 10px; background: ${getPriorityColor(record.priority)}20; color: ${getPriorityColor(record.priority)};">
+                                ${getPriorityIcon(record.priority)} ${record.priority.toUpperCase()}
+                            </div>
+                            <div class="timeline-content" style="margin-top: 15px;">
+                                <strong>Staff:</strong> ${record.staffMember}<br>
+                                <strong>Location:</strong> ${record.location}<br><br>
+                                <strong>Details:</strong><br>
+                                ${record.description}
+                            </div>
+                            <div style="margin-top: 15px;">
+                                <button onclick="deleteRecord('${record.id}')" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
+                                    🗑️ Delete Record
+                                </button>
+                            </div>
+                            ${record.photos.length > 0 ? `
+                                <div class="timeline-photos">
+                                    ${record.photos.map(photo => {
+                                        if (photo.isRaw) {
+                                            return `<div class="timeline-photo" style="background: linear-gradient(45deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; text-align: center; cursor: pointer;" onclick="openModal('${photo.data}', '${photo.name}')" title="${photo.name}">
+                                                📷 RAW<br>${photo.name.split('.').pop().toUpperCase()}
+                                            </div>`;
+                                        } else {
+                                            return `<img src="${photo.data}" class="timeline-photo" onclick="openModal('${photo.data}')" title="${photo.name}">`;
+                                        }
+                                    }).join('')}
+                                </div>
+                            ` : ''}
                         </div>
-                    ` : ''}
+                        <div class="mass-delete-checkbox" style="display: none;">
+                            <input type="checkbox" id="select-${record.id}" onchange="updateMassDeleteButton()" style="transform: scale(1.5);">
+                        </div>
+                    </div>
                 </div>
             `).join('');
         }
