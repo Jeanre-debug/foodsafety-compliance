@@ -397,6 +397,39 @@
         .export-btn {
             background: linear-gradient(45deg, #28a745, #20c997);
             margin-left: 10px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(40, 167, 69, 0.5);
+        }
+
+        .export-btn:hover div {
+            left: 0;
+        }
+
+        /* Enhanced button animations */
+        .btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
         }
 
         .search-box {
@@ -739,9 +772,12 @@
             <h2 style="margin-bottom: 25px; color: #2c3e50;">📋 Compliance Timeline</h2>
             
             <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
-                <input type="text" class="search-box" id="search-input" placeholder="🔍 Search records by staff, location, category, or description..." style="flex: 1; min-width: 300px;">
-                <button type="button" class="btn" onclick="exportToPDF()" style="background: linear-gradient(45deg, #28a745, #20c997);">📄 Export to PDF</button>
-                <button type="button" class="btn" onclick="toggleMassDelete()" style="background: linear-gradient(45deg, #dc3545, #c82333);">🗑️ Mass Delete</button>
+                <input type="text" class="search-box" id="search-input" placeholder="Search records by staff, location, category, or description..." style="flex: 1; min-width: 300px;">
+                <button type="button" class="btn" onclick="exportToPDF()" style="background: linear-gradient(45deg, #28a745, #20c997); box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4); font-size: 1.1rem; padding: 18px 35px; border-radius: 15px; position: relative; overflow: hidden;">
+                    <span style="position: relative; z-index: 2;">Generate Professional Report</span>
+                    <div style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(45deg, #20c997, #28a745); transition: left 0.3s ease;"></div>
+                </button>
+                <button type="button" class="btn" onclick="toggleMassDelete()" style="background: linear-gradient(45deg, #dc3545, #c82333);">Mass Delete</button>
             </div>
             
             <div class="timeline" id="timeline-container">
@@ -1187,121 +1223,299 @@
             }
         }
 
+        // Helper function to calculate space needed for a record
+        function calculateRecordSpace(record, doc) {
+            let space = 0;
+            
+            // Header space
+            space += 16; // Increased for better spacing
+            
+            // Record details space
+            space += 12; // Increased for better spacing
+            
+            // Description space
+            const descriptionLines = doc.splitTextToSize(record.description, 170);
+            space += 8 + (descriptionLines.length * 4) + 8; // Increased spacing
+            
+            // Photos space
+            if (record.photos && record.photos.length > 0) {
+                space += 12; // Header
+                const photosPerRow = 3;
+                const photoHeight = 35; // Updated to match new dimensions
+                const totalRows = Math.ceil(record.photos.length / photosPerRow);
+                space += (totalRows * (photoHeight + 12)) + 10; // Increased spacing
+            }
+            
+            // Separator space
+            space += 15; // Increased for better separation
+            
+            return space;
+        }
+
         // PDF Export Functions
         async function exportToPDF() {
             if (!currentUser) {
-                alert('❌ Please sign in to export data');
+                alert('Please sign in to export data');
                 return;
             }
 
             if (records.length === 0) {
-                alert('❌ No records to export');
+                alert('No records to export');
                 return;
             }
 
             // Show loading message
             const exportBtn = document.querySelector('button[onclick="exportToPDF()"]');
             const originalText = exportBtn.textContent;
-            exportBtn.textContent = '⏳ Generating PDF...';
+            exportBtn.textContent = 'Generating PDF...';
             exportBtn.disabled = true;
 
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'a4');
                 
-                // Add header
+                // Enhanced header with gradient effect
                 doc.setFillColor(102, 126, 234);
-                doc.rect(0, 0, 210, 30, 'F');
+                doc.rect(0, 0, 210, 35, 'F');
+                
+                // Add subtle pattern overlay
+                for (let i = 0; i < 210; i += 5) {
+                    doc.setDrawColor(255, 255, 255, 0.1);
+                    doc.line(i, 0, i, 35);
+                }
+                
+                // Main title with shadow effect
                 doc.setTextColor(255, 255, 255);
-                doc.setFontSize(24);
-                doc.text('Food Safety Manager', 105, 15, { align: 'center' });
+                doc.setFontSize(28);
+                doc.setFont(undefined, 'bold');
+                doc.text('Food Safety Manager', 105, 18, { align: 'center' });
+                
+                // Subtitle
                 doc.setFontSize(12);
-                doc.text(`Report generated on ${new Date().toLocaleDateString()}`, 105, 25, { align: 'center' });
+                doc.setFont(undefined, 'normal');
+                doc.text(`Compliance Report - ${new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                })}`, 105, 28, { align: 'center' });
                 
-                // Add user info
+                // Add decorative line
+                doc.setDrawColor(255, 255, 255);
+                doc.setLineWidth(0.5);
+                doc.line(30, 32, 180, 32);
+                
+                // Enhanced user info section with background
+                doc.setFillColor(248, 249, 250);
+                doc.rect(15, 45, 180, 25, 'F');
+                doc.setDrawColor(102, 126, 234);
+                doc.setLineWidth(0.3);
+                doc.rect(15, 45, 180, 25, 'S');
+                
                 doc.setTextColor(44, 62, 80);
-                doc.setFontSize(10);
-                doc.text(`User: ${currentUser.email}`, 20, 40);
-                doc.text(`Total Records: ${records.length}`, 20, 45);
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                doc.text('Report Information:', 20, 52);
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(9);
+                doc.text(`Generated by: ${currentUser.email}`, 20, 58);
+                doc.text(`Total Records: ${records.length}`, 20, 63);
                 
-                let yPosition = 60;
+                // Add summary statistics
+                const thisMonth = new Date();
+                thisMonth.setDate(1);
+                const thisMonthRecords = records.filter(r => new Date(r.date) >= thisMonth);
+                const highPriorityRecords = records.filter(r => r.priority === 'high');
+                const recordsWithPhotos = records.filter(r => r.photos.length > 0);
+                
+                doc.text(`This Month: ${thisMonthRecords.length}`, 120, 58);
+                doc.text(`High Priority: ${highPriorityRecords.length}`, 120, 63);
+                doc.text(`With Photos: ${recordsWithPhotos.length}`, 120, 68);
+                
+                let yPosition = 90; // Start a bit lower to ensure proper spacing
                 let pageNumber = 1;
                 
                 for (let i = 0; i < records.length; i++) {
                     const record = records[i];
                     
-                    // Check if we need a new page
-                    if (yPosition > 250) {
+                    // Calculate estimated space needed for this record
+                    const estimatedSpace = calculateRecordSpace(record, doc);
+                    
+                                // Check if we need a new page - ensure each record fits nicely on one page
+            if (yPosition + estimatedSpace > 240) {
                         doc.addPage();
                         pageNumber++;
                         yPosition = 20;
+                        
+                        // Add page header for subsequent pages
+                        doc.setFillColor(102, 126, 234);
+                        doc.rect(0, 0, 210, 25, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(16);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
+                        doc.setFontSize(10);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
+                        yPosition = 40; // Start new pages a bit lower for better spacing
                     }
                     
-                    // Record header
-                    doc.setFillColor(102, 126, 234, 0.1);
-                    doc.rect(15, yPosition - 5, 180, 8, 'F');
-                    doc.setTextColor(102, 126, 234);
-                    doc.setFontSize(14);
+                    // --- Draw border around record ---
+                    const recordTop = yPosition - 3;
+                    let recordHeight = estimatedSpace + 6; // Add extra space for padding
+                    doc.setDrawColor(225, 232, 237); // #e1e8ed
+                    doc.setLineWidth(0.8);
+                    doc.roundedRect(12, recordTop, 186, recordHeight, 6, 6, 'S');
+                    let innerX = 18; // for padding
+                    let contentWidth = 174;
+                    let sectionY = yPosition + 4; // Add more top padding to stay inside border
+
+                    // --- Record header (category, number, priority) ---
+                    // Enhanced record header with category color - more compact
+                    const categoryColors = {
+                        'food-safety': [255, 107, 107],
+                        'health-safety': [78, 205, 196],
+                        'cleaning': [69, 183, 73],
+                        'training': [247, 147, 30],
+                        'equipment': [155, 89, 182]
+                    };
+                    
+                    const categoryColor = categoryColors[record.category] || [102, 126, 234];
+                    doc.setFillColor(categoryColor[0], categoryColor[1], categoryColor[2], 0.15);
+                    doc.rect(innerX, sectionY - 4, contentWidth, 8, 'F');
+                    doc.setDrawColor(categoryColor[0], categoryColor[1], categoryColor[2]);
+                    doc.setLineWidth(0.5);
+                    doc.rect(innerX, sectionY - 4, contentWidth, 8, 'S');
+                    
+                    // Record number and category - more compact
+                    doc.setTextColor(categoryColor[0], categoryColor[1], categoryColor[2]);
+                    doc.setFontSize(12);
                     doc.setFont(undefined, 'bold');
-                    doc.text(`Record ${i + 1}`, 20, yPosition);
+                    doc.text(`Record ${i + 1}`, innerX + 2, sectionY);
                     
-                    yPosition += 15;
+                    doc.setFontSize(9);
+                    doc.setFont(undefined, 'normal');
+                    doc.text(`${getCategoryName(record.category)}`, innerX + 62, sectionY);
                     
-                    // Record details
-                    doc.setTextColor(44, 62, 80);
+                    // Priority badge - more prominent and colored
+                    const priorityColors = {
+                        'low': [255, 193, 7],      // yellow
+                        'medium': [255, 140, 0],  // orange
+                        'high': [220, 53, 69]     // red
+                    };
+                    const priorityColor = priorityColors[record.priority] || [108, 117, 125];
                     doc.setFontSize(10);
-                    doc.setFont(undefined, 'normal');
-                    
-                    doc.text(`Date: ${formatDate(record.date)}`, 20, yPosition);
-                    yPosition += 6;
-                    doc.text(`Category: ${getCategoryName(record.category)}`, 20, yPosition);
-                    yPosition += 6;
-                    doc.text(`Priority: ${record.priority.toUpperCase()}`, 20, yPosition);
-                    yPosition += 6;
-                    doc.text(`Staff: ${record.staffMember}`, 20, yPosition);
-                    yPosition += 6;
-                    doc.text(`Location: ${record.location}`, 20, yPosition);
-                    yPosition += 8;
-                    
-                    // Description
                     doc.setFont(undefined, 'bold');
-                    doc.text('Description:', 20, yPosition);
-                    yPosition += 6;
+                    doc.setTextColor(priorityColor[0], priorityColor[1], priorityColor[2]);
+                    doc.text(record.priority.toUpperCase(), innerX + contentWidth - 10, sectionY, { align: 'center' });
+                    doc.setTextColor(44, 62, 80); // reset for rest
+                    sectionY += 12;
+                    
+                    // --- Record details (date, staff, location) ---
+                    // Left column
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Date:', innerX, sectionY);
                     doc.setFont(undefined, 'normal');
+                    doc.text(formatDate(record.date), innerX + 25, sectionY);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Staff:', innerX, sectionY + 5);
+                    doc.setFont(undefined, 'normal');
+                    doc.text(record.staffMember, innerX + 25, sectionY + 5);
+                    // Right column
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Location:', innerX + 100, sectionY);
+                    doc.setFont(undefined, 'normal');
+                    doc.text(record.location, innerX + 125, sectionY);
+                    sectionY += 10;
                     
+                    // --- Description section ---
+                    doc.setFillColor(247, 250, 253); // #f7fafd
                     const descriptionLines = doc.splitTextToSize(record.description, 170);
-                    doc.text(descriptionLines, 20, yPosition);
-                    yPosition += descriptionLines.length * 4;
+                    const descHeight = 12 + descriptionLines.length * 4;
+                    doc.roundedRect(innerX, sectionY - 1, contentWidth, descHeight, 3, 3, 'F');
+                    doc.setDrawColor(102, 126, 234, 0.2);
+                    doc.setLineWidth(0.3);
+                    doc.roundedRect(innerX, sectionY - 1, contentWidth, descHeight, 3, 3, 'S');
+                    doc.setFont(undefined, 'bold');
+                    doc.setTextColor(102, 126, 234);
+                    doc.setFontSize(10);
+                    doc.text('Description:', innerX + 5, sectionY + 5);
+                    sectionY += 12;
+                    doc.setFont(undefined, 'normal');
+                    doc.setTextColor(44, 62, 80);
+                    doc.setFontSize(9);
+                    doc.text(descriptionLines, innerX + 5, sectionY + 2);
+                    sectionY += descriptionLines.length * 4 + 8;
                     
-                    // Photos
+                    // --- Attachments section ---
                     if (record.photos && record.photos.length > 0) {
-                        yPosition += 5;
+                        doc.setFillColor(249, 249, 251); // #f9f9fb
+                        const attachHeight = 20 + (Math.ceil(record.photos.length / 3) * 47);
+                        doc.roundedRect(innerX, sectionY - 1, contentWidth, attachHeight, 3, 3, 'F');
+                        doc.setDrawColor(102, 126, 234, 0.2);
+                        doc.setLineWidth(0.3);
+                        doc.roundedRect(innerX, sectionY - 1, contentWidth, attachHeight, 3, 3, 'S');
                         doc.setFont(undefined, 'bold');
-                        doc.text('Photos:', 20, yPosition);
-                        yPosition += 6;
-                        doc.setFont(undefined, 'normal');
+                        doc.setTextColor(102, 126, 234);
+                        doc.setFontSize(10);
+                        doc.text(`Attachments (${record.photos.length})`, innerX + 5, sectionY + 5);
+                        sectionY += 12;
+                        // ... photo grid as before, but use innerX for X ...
+                        // ... update sectionY after photos ...
+                        // Calculate photos per row (3 photos per row for better visibility)
+                        const photosPerRow = 3;
+                        const photoWidth = 50;
+                        const photoHeight = 35; // Increased height for better visibility
+                        const photoSpacing = 10; // Increased spacing for better separation
                         
                         for (let j = 0; j < record.photos.length; j++) {
                             const photo = record.photos[j];
+                            const row = Math.floor(j / photosPerRow);
+                            const col = j % photosPerRow;
+                            const photoX = innerX + (col * (photoWidth + photoSpacing));
+                            const photoY = sectionY + (row * (photoHeight + 12)); // Better row spacing
                             
-                            if (yPosition > 200) {
+                            // Check if we need a new page - ensure photos fit on same page as record
+                            if (photoY > 200) {
                                 doc.addPage();
                                 pageNumber++;
                                 yPosition = 20;
+                                
+                                // Add page header
+                                doc.setFillColor(102, 126, 234);
+                                doc.rect(0, 0, 210, 25, 'F');
+                                doc.setTextColor(255, 255, 255);
+                                doc.setFontSize(16);
+                                doc.setFont(undefined, 'bold');
+                                doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
+                                doc.setFontSize(10);
+                                doc.setFont(undefined, 'normal');
+                                doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
+                                yPosition = 40; // Start new pages a bit lower for better spacing
+                                continue;
                             }
                             
                             if (photo.isRaw) {
-                                // Placeholder for RAW files
+                                // Enhanced RAW file placeholder - more compact
                                 doc.setFillColor(102, 126, 234, 0.1);
-                                doc.rect(20, yPosition, 40, 30, 'F');
+                                doc.rect(photoX, photoY, photoWidth, photoHeight, 'F');
+                                doc.setDrawColor(102, 126, 234);
+                                doc.setLineWidth(0.5);
+                                doc.rect(photoX, photoY, photoWidth, photoHeight, 'S');
+                                
                                 doc.setTextColor(102, 126, 234);
                                 doc.setFontSize(8);
-                                doc.text('RAW', 30, yPosition + 15, { align: 'center' });
-                                doc.text(photo.name.split('.').pop().toUpperCase(), 30, yPosition + 25, { align: 'center' });
-                                doc.text(photo.name, 70, yPosition + 15);
+                                doc.setFont(undefined, 'bold');
+                                doc.text('RAW', photoX + photoWidth/2, photoY + 15, { align: 'center' });
+                                doc.setFont(undefined, 'normal');
+                                doc.setFontSize(7);
+                                doc.text(photo.name.split('.').pop().toUpperCase(), photoX + photoWidth/2, photoY + 25, { align: 'center' });
+                                doc.setFontSize(6);
+                                const displayName = photo.name.length > 15 ? photo.name.substring(0, 15) + '...' : photo.name;
+                                doc.text(displayName, photoX + photoWidth/2, photoY + 32, { align: 'center' });
                             } else {
                                 try {
-                                    // Add image to PDF
+                                    // Improved image handling for PDF
                                     const img = new Image();
                                     img.crossOrigin = 'anonymous';
                                     
@@ -1311,46 +1525,109 @@
                                         img.src = photo.data;
                                     });
                                     
+                                    // Create canvas with proper dimensions for better quality
                                     const canvas = document.createElement('canvas');
                                     const ctx = canvas.getContext('2d');
+                                    
+                                    // Set canvas size to original image dimensions for best quality
                                     canvas.width = img.width;
                                     canvas.height = img.height;
+                                    
+                                    // Draw image at full resolution
                                     ctx.drawImage(img, 0, 0);
                                     
-                                    const imgData = canvas.toDataURL('image/jpeg', 0.8);
-                                    doc.addImage(imgData, 'JPEG', 20, yPosition, 40, 30);
+                                    // Convert to data URL with maximum quality
+                                    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                                    
+                                    // Add image to PDF
+                                    doc.addImage(imgData, 'JPEG', photoX, photoY, photoWidth, photoHeight);
+                                    
+                                    // Add border around image
+                                    doc.setDrawColor(102, 126, 234);
+                                    doc.setLineWidth(0.3);
+                                    doc.rect(photoX, photoY, photoWidth, photoHeight, 'S');
+                                    
+                                    // Add filename below image with better styling
                                     doc.setTextColor(44, 62, 80);
-                                    doc.setFontSize(8);
-                                    doc.text(photo.name, 70, yPosition + 15);
+                                    doc.setFontSize(7);
+                                    const displayName = photo.name.length > 15 ? photo.name.substring(0, 15) + '...' : photo.name;
+                                    doc.text(displayName, photoX + photoWidth/2, photoY + photoHeight + 6, { align: 'center' });
                                     
                                 } catch (error) {
                                     console.error('Error adding image to PDF:', error);
+                                    // Show error placeholder
+                                    doc.setFillColor(220, 53, 69, 0.1);
+                                    doc.rect(photoX, photoY, photoWidth, photoHeight, 'F');
+                                    doc.setDrawColor(220, 53, 69);
+                                    doc.setLineWidth(0.5);
+                                    doc.rect(photoX, photoY, photoWidth, photoHeight, 'S');
                                     doc.setTextColor(220, 53, 69);
-                                    doc.text('Image could not be loaded', 70, yPosition + 15);
+                                    doc.setFontSize(6);
+                                    doc.text('Image Error', photoX + photoWidth/2, photoY + photoHeight/2, { align: 'center' });
+                                    doc.text(photo.name.substring(0, 10) + '...', photoX + photoWidth/2, photoY + photoHeight + 4, { align: 'center' });
                                 }
                             }
-                            
-                            yPosition += 35;
                         }
+                        
+                        // Update yPosition based on the last photo row - better spacing
+                        const totalRows = Math.ceil(record.photos.length / photosPerRow);
+                        sectionY += (totalRows * (photoHeight + 12)) + 10; // Better spacing
                     }
                     
-                    yPosition += 10;
+                    // Add separator line between records - more appealing
+                    doc.setDrawColor(102, 126, 234, 0.2);
+                    doc.setLineWidth(0.5);
+                    doc.line(innerX, sectionY + 2, innerX + contentWidth, sectionY + 2);
+                    sectionY += 15;
                     
-                    // Add page number
+                    // Update main yPosition for next record
+                    yPosition = sectionY;
+                    
+                    // Add page number at bottom
                     doc.setFontSize(8);
                     doc.setTextColor(128, 128, 128);
-                    doc.text(`Page ${pageNumber}`, 105, 290, { align: 'center' });
+                    doc.text(`Page ${pageNumber}`, 105, 285, { align: 'center' });
+                }
+                
+                // Add professional footer - more compact
+                const totalPages = doc.getNumberOfPages();
+                for (let page = 1; page <= totalPages; page++) {
+                    doc.setPage(page);
+                    
+                    // Footer background
+                    doc.setFillColor(102, 126, 234);
+                    doc.rect(0, 275, 210, 15, 'F');
+                    
+                    // Footer content
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(7);
+                    doc.setFont(undefined, 'normal');
+                    doc.text('Food Safety Manager - Compliance Report', 20, 283);
+                    doc.text(`Generated on ${new Date().toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })}`, 20, 289);
+                    
+                    // Page numbers
+                    doc.text(`Page ${page} of ${totalPages}`, 105, 283, { align: 'center' });
+                    
+                    // Company info (you can customize this)
+                    doc.text('© 2024 Food Safety Manager', 150, 283);
+                    doc.text('Compliance & Documentation System', 150, 289);
                 }
                 
                 // Save the PDF
-                const fileName = `safety-records-${currentUser.email}-${new Date().toISOString().split('T')[0]}.pdf`;
+                const fileName = `food-safety-compliance-report-${currentUser.email}-${new Date().toISOString().split('T')[0]}.pdf`;
                 doc.save(fileName);
                 
-                alert('✅ PDF exported successfully!');
+                alert('Professional PDF report generated successfully!');
                 
             } catch (error) {
                 console.error('Error generating PDF:', error);
-                alert('❌ Failed to generate PDF. Please try again.');
+                alert('Failed to generate PDF. Please try again.');
             } finally {
                 // Restore button
                 exportBtn.textContent = originalText;
@@ -1679,20 +1956,20 @@
                 recentActivity.innerHTML = recentRecords.map(record => `
                     <div class="timeline-item">
                         <div class="timeline-date">${formatDate(record.date)}</div>
-                        <div class="timeline-category category-${record.category}">${getCategoryIcon(record.category)} ${getCategoryName(record.category)}</div>
+                        <div class="timeline-category category-${record.category}">${getCategoryName(record.category)}</div>
                         <div class="timeline-content">
                             <strong>${record.staffMember}</strong> - ${record.location}<br>
                             ${record.description.substring(0, 100)}${record.description.length > 100 ? '...' : ''}
                         </div>
                         <div style="margin-top: 10px;">
                             <button onclick="deleteRecord('${record.id}')" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s ease;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
-                                🗑️ Delete
+                                Delete
                             </button>
                         </div>
                         ${record.photos.length > 0 ? `<div class="timeline-photos">${record.photos.map(photo => {
                             if (photo.isRaw) {
                                 return `<div class="timeline-photo" style="background: linear-gradient(45deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; text-align: center; cursor: pointer;" onclick="openModal('${photo.data}', '${photo.name}')" title="${photo.name}">
-                                    📷 RAW<br>${photo.name.split('.').pop().toUpperCase()}
+                                    RAW<br>${photo.name.split('.').pop().toUpperCase()}
                                 </div>`;
                             } else {
                                 return `<img src="${photo.data}" class="timeline-photo" onclick="openModal('${photo.data}')" title="${photo.name}">`;
@@ -1717,9 +1994,9 @@
                     <div style="display: flex; align-items: flex-start; gap: 15px;">
                         <div style="flex: 1;">
                             <div class="timeline-date">${formatDate(record.date)}</div>
-                            <div class="timeline-category category-${record.category}">${getCategoryIcon(record.category)} ${getCategoryName(record.category)}</div>
+                            <div class="timeline-category category-${record.category}">${getCategoryName(record.category)}</div>
                             <div style="display: inline-block; padding: 3px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: 600; margin-left: 10px; background: ${getPriorityColor(record.priority)}20; color: ${getPriorityColor(record.priority)};">
-                                ${getPriorityIcon(record.priority)} ${record.priority.toUpperCase()}
+                                ${record.priority.toUpperCase()}
                             </div>
                             <div class="timeline-content" style="margin-top: 15px;">
                                 <strong>Staff:</strong> ${record.staffMember}<br>
@@ -1729,7 +2006,7 @@
                             </div>
                             <div style="margin-top: 15px;">
                                 <button onclick="deleteRecord('${record.id}')" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
-                                    🗑️ Delete Record
+                                    Delete Record
                                 </button>
                             </div>
                             ${record.photos.length > 0 ? `
@@ -1737,7 +2014,7 @@
                                     ${record.photos.map(photo => {
                                         if (photo.isRaw) {
                                             return `<div class="timeline-photo" style="background: linear-gradient(45deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; text-align: center; cursor: pointer;" onclick="openModal('${photo.data}', '${photo.name}')" title="${photo.name}">
-                                                📷 RAW<br>${photo.name.split('.').pop().toUpperCase()}
+                                                RAW<br>${photo.name.split('.').pop().toUpperCase()}
                                             </div>`;
                                         } else {
                                             return `<img src="${photo.data}" class="timeline-photo" onclick="openModal('${photo.data}')" title="${photo.name}">`;
@@ -1780,7 +2057,7 @@
                 // For DNG files, show a placeholder since browsers can't display them
                 modal.innerHTML = `
                     <div class="modal-content" style="background: white; padding: 40px; text-align: center; max-width: 500px;">
-                        <div style="font-size: 4rem; margin-bottom: 20px;">📷</div>
+                        <div style="font-size: 4rem; margin-bottom: 20px; color: #667eea;">RAW</div>
                         <h3 style="color: #2c3e50; margin-bottom: 15px;">Raw Image File</h3>
                         <p style="color: #666; margin-bottom: 20px;">${fileName}</p>
                         <p style="color: #666; font-size: 0.9rem;">This is a DNG (Digital Negative) raw image file. Raw files contain unprocessed image data and cannot be displayed directly in the browser.</p>
@@ -1813,7 +2090,7 @@
         // Export functionality
         function exportData() {
             if (!currentUser) {
-                alert('❌ Please sign in to export data');
+                alert('Please sign in to export data');
                 return;
             }
             
@@ -1863,11 +2140,11 @@
                             updateTimeline();
                             
                             // Show success message
-                            alert('🗑️ Record deleted successfully!');
+                            alert('Record deleted successfully!');
                         })
                         .catch((error) => {
                             console.error('Error deleting from Firebase:', error);
-                            alert('❌ Failed to delete record. Please try again.');
+                            alert('Failed to delete record. Please try again.');
                         });
                 } else {
                     console.log('Deleting locally only');
@@ -1875,7 +2152,7 @@
                     records = records.filter(r => r.id !== recordId);
                     updateDashboard();
                     updateTimeline();
-                    alert('🗑️ Record deleted successfully!');
+                    alert('Record deleted successfully!');
                 }
             }
         }
