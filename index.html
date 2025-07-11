@@ -916,12 +916,78 @@
                         <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">Supports: JPG, PNG, WebP, DNG (Raw)</p>
                         <input type="file" id="photo-input" multiple accept="image/*,.dng" style="display: none;">
                     </div>
-                    <div id="photo-preview" style="margin-top: 15px; display: flex; gap: 10px; flex-wrap;"></div>
+                    <div id="photo-preview" style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
                 </div>
 
                 <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 30px;">
                     <button type="submit" class="btn">💾 Save Record</button>
                     <button type="button" class="btn export-btn" onclick="exportData()">📄 Export All Data</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Edit Record Section -->
+        <div id="edit-record" class="section">
+            <h2 style="margin-bottom: 25px; color: #2c3e50;">✏️ Edit Record</h2>
+            
+            <form id="edit-record-form">
+                <div class="form-group">
+                    <label for="edit-category">Category</label>
+                    <select id="edit-category" required>
+                        <option value="">Select Category</option>
+                        <option value="food-safety">🍽️ Food Safety Violation</option>
+                        <option value="health-safety">⚕️ Health & Safety Issue</option>
+                        <option value="cleaning">🧽 Cleaning Standards</option>
+                        <option value="training">📚 Training Required</option>
+                        <option value="equipment">🔧 Equipment Issue</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-priority">Priority Level</label>
+                    <select id="edit-priority" required>
+                        <option value="">Select Priority</option>
+                        <option value="low">🟢 Low - Minor issue</option>
+                        <option value="medium">🟡 Medium - Needs attention</option>
+                        <option value="high">🔴 High - Immediate action required</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-staff-member">Staff Member(s) Involved</label>
+                    <div class="staff-selector-container">
+                        <div class="staff-input-wrapper">
+                            <input type="text" id="edit-staff-member-input" placeholder="Start typing to search staff members..." autocomplete="off">
+                            <div id="edit-staff-dropdown" class="staff-dropdown" style="display: none;"></div>
+                        </div>
+                        <div id="edit-selected-staff-tags" class="selected-staff-tags"></div>
+                        <input type="hidden" id="edit-staff-member" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-location">Location</label>
+                    <input type="text" id="edit-location" placeholder="Kitchen, Prep Area, Storage, etc." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-description">Description & Comments</label>
+                    <textarea id="edit-description" placeholder="Detailed description of the issue, actions taken, and follow-up required..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Photos (Optional)</label>
+                    <div class="photo-upload" onclick="document.getElementById('edit-photo-input').click()">
+                        <p>📸 Click to upload photos or drag & drop</p>
+                        <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">Supports: JPG, PNG, WebP, DNG (Raw)</p>
+                        <input type="file" id="edit-photo-input" multiple accept="image/*,.dng" style="display: none;">
+                    </div>
+                    <div id="edit-photo-preview" style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                </div>
+
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 30px;">
+                    <button type="submit" class="btn" style="background: linear-gradient(45deg, #17a2b8, #138496);">💾 Update Record</button>
+                    <button type="button" class="btn" onclick="cancelEdit()" style="background: linear-gradient(45deg, #6c757d, #495057);">❌ Cancel</button>
                 </div>
             </form>
         </div>
@@ -1161,9 +1227,12 @@
         // Data storage - now user-specific
         let records = [];
         let selectedPhotos = [];
+        let editPhotos = []; // Track photos for edit form
         let staffWarnings = {}; // Track staff warnings and incident counts
         let staffMembers = []; // Track staff members for dropdown
         let selectedStaffMembers = []; // Track selected staff for current record
+        let editSelectedStaffMembers = []; // Track selected staff for edit form
+        let editingRecordId = null; // Track which record is being edited
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -3272,9 +3341,12 @@
                             <strong>${record.staffMember}</strong> - ${record.location}<br>
                             ${record.description.substring(0, 100)}${record.description.length > 100 ? '...' : ''}
                         </div>
-                        <div style="margin-top: 10px;">
+                        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button onclick="editRecord('${record.id}')" style="background: linear-gradient(45deg, #17a2b8, #138496); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s ease;" onmouseover="this.style.background='linear-gradient(45deg, #138496, #117a8b)'" onmouseout="this.style.background='linear-gradient(45deg, #17a2b8, #138496)'">
+                                ✏️ Edit
+                            </button>
                             <button onclick="deleteRecord('${record.id}')" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s ease;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
-                                Delete
+                                🗑️ Delete
                             </button>
                         </div>
                         ${record.photos.length > 0 ? `<div class="timeline-photos">${record.photos.map(photo => {
@@ -3315,9 +3387,12 @@
                                 <strong>Details:</strong><br>
                                 ${record.description}
                             </div>
-                            <div style="margin-top: 15px;">
+                            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button onclick="editRecord('${record.id}')" style="background: linear-gradient(45deg, #17a2b8, #138496); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.background='linear-gradient(45deg, #138496, #117a8b)'" onmouseout="this.style.background='linear-gradient(45deg, #17a2b8, #138496)'">
+                                    ✏️ Edit Record
+                                </button>
                                 <button onclick="deleteRecord('${record.id}')" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
-                                    Delete Record
+                                    🗑️ Delete Record
                                 </button>
                             </div>
                             ${record.photos.length > 0 ? `
@@ -3522,6 +3597,456 @@
                 'high': '#dc3545'
             };
             return colors[priority] || '#6c757d';
+        }
+
+        // Edit Record Functions
+        function editRecord(recordId) {
+            const record = records.find(r => r.id === recordId);
+            if (!record) {
+                alert('❌ Record not found');
+                return;
+            }
+
+            editingRecordId = recordId;
+            
+            // Populate the edit form
+            document.getElementById('edit-category').value = record.category;
+            document.getElementById('edit-priority').value = record.priority;
+            document.getElementById('edit-location').value = record.location;
+            document.getElementById('edit-description').value = record.description;
+            
+            // Handle staff members
+            editSelectedStaffMembers = [];
+            if (record.staffMember) {
+                const staffNames = record.staffMember.split(',').map(name => name.trim());
+                staffNames.forEach(name => {
+                    const staffMember = staffMembers.find(staff => staff.name.toLowerCase() === name.toLowerCase());
+                    if (staffMember) {
+                        editSelectedStaffMembers.push(staffMember);
+                    } else {
+                        // Create a temporary staff member for names not in the list
+                        editSelectedStaffMembers.push({
+                            id: `temp-${Date.now()}-${Math.random()}`,
+                            name: name,
+                            isTemporary: true
+                        });
+                    }
+                });
+            }
+            updateEditSelectedStaffTags();
+            updateEditHiddenInput();
+            
+            // Handle photos
+            editPhotos = [...record.photos];
+            updateEditPhotoPreview();
+            
+            // Setup edit form handlers
+            setupEditFormHandlers();
+            
+            // Switch to edit section
+            showSection('edit-record');
+        }
+
+        function setupEditFormHandlers() {
+            // Setup edit staff selector
+            const input = document.getElementById('edit-staff-member-input');
+            const dropdown = document.getElementById('edit-staff-dropdown');
+            
+            if (!input || !dropdown) return;
+            
+            // Clear any existing event listeners
+            input.removeEventListener('input', handleEditStaffInput);
+            input.removeEventListener('focus', showEditStaffDropdown);
+            input.removeEventListener('blur', hideEditStaffDropdown);
+            
+            // Add event listeners
+            input.addEventListener('input', handleEditStaffInput);
+            input.addEventListener('focus', showEditStaffDropdown);
+            input.addEventListener('blur', hideEditStaffDropdown);
+            
+            // Setup edit photo upload
+            setupEditPhotoUpload();
+            
+            // Setup edit form submission
+            setupEditFormSubmission();
+        }
+
+        function handleEditStaffInput() {
+            const input = document.getElementById('edit-staff-member-input');
+            const query = input.value.toLowerCase();
+            
+            updateEditStaffDropdown(query);
+        }
+
+        function showEditStaffDropdown() {
+            const dropdown = document.getElementById('edit-staff-dropdown');
+            if (dropdown && staffMembers.length > 0) {
+                dropdown.style.display = 'block';
+                updateEditStaffDropdown();
+            }
+        }
+
+        function hideEditStaffDropdown() {
+            setTimeout(() => {
+                const dropdown = document.getElementById('edit-staff-dropdown');
+                if (dropdown) {
+                    dropdown.style.display = 'none';
+                }
+            }, 200);
+        }
+
+        function updateEditStaffDropdown(query = '') {
+            const dropdown = document.getElementById('edit-staff-dropdown');
+            if (!dropdown) return;
+            
+            const filteredStaff = staffMembers.filter(staff => 
+                staff.name.toLowerCase().includes(query.toLowerCase()) &&
+                !editSelectedStaffMembers.some(selected => selected.id === staff.id)
+            );
+            
+            if (filteredStaff.length === 0) {
+                dropdown.innerHTML = '<div class="staff-dropdown-item">No staff members found</div>';
+                return;
+            }
+            
+            dropdown.innerHTML = filteredStaff.map(staff => `
+                <div class="staff-dropdown-item" onclick="selectEditStaffMember('${staff.id}')">
+                    ${staff.name}
+                </div>
+            `).join('');
+        }
+
+        function selectEditStaffMember(staffId) {
+            const staffMember = staffMembers.find(staff => staff.id === staffId);
+            if (!staffMember) return;
+            
+            if (!editSelectedStaffMembers.some(staff => staff.id === staffId)) {
+                editSelectedStaffMembers.push(staffMember);
+                updateEditSelectedStaffTags();
+                updateEditHiddenInput();
+            }
+            
+            const input = document.getElementById('edit-staff-member-input');
+            if (input) {
+                input.value = '';
+            }
+            hideEditStaffDropdown();
+        }
+
+        function removeEditSelectedStaff(staffId) {
+            editSelectedStaffMembers = editSelectedStaffMembers.filter(staff => staff.id !== staffId);
+            updateEditSelectedStaffTags();
+            updateEditHiddenInput();
+        }
+
+        function updateEditSelectedStaffTags() {
+            const container = document.getElementById('edit-selected-staff-tags');
+            if (!container) return;
+            
+            if (editSelectedStaffMembers.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = editSelectedStaffMembers.map(staff => `
+                <div class="staff-tag">
+                    <span>${staff.name}</span>
+                    <button class="staff-tag-remove" onclick="removeEditSelectedStaff('${staff.id}')">×</button>
+                </div>
+            `).join('');
+        }
+
+        function updateEditHiddenInput() {
+            const hiddenInput = document.getElementById('edit-staff-member');
+            if (hiddenInput) {
+                const staffNames = editSelectedStaffMembers.map(staff => staff.name).join(', ');
+                hiddenInput.value = staffNames;
+            }
+        }
+
+        function setupEditPhotoUpload() {
+            const photoUpload = document.querySelector('#edit-record .photo-upload');
+            const photoInput = document.getElementById('edit-photo-input');
+            
+            if (!photoUpload || !photoInput) return;
+            
+            // Drag and drop
+            photoUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                photoUpload.classList.add('dragover');
+            });
+            
+            photoUpload.addEventListener('dragleave', () => {
+                photoUpload.classList.remove('dragover');
+            });
+            
+            photoUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                photoUpload.classList.remove('dragover');
+                handleEditFiles(e.dataTransfer.files);
+            });
+            
+            photoInput.addEventListener('change', (e) => {
+                handleEditFiles(e.target.files);
+            });
+        }
+
+        function handleEditFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.dng')) {
+                    if (file.name.toLowerCase().endsWith('.dng')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            editPhotos.push({
+                                name: file.name,
+                                data: e.target.result,
+                                type: file.type || 'application/octet-stream',
+                                isRaw: true,
+                                processing: false
+                            });
+                            updateEditPhotoPreview();
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        compressEditImage(file);
+                    }
+                } else {
+                    alert(`❌ Unsupported file type: ${file.name}. Please upload JPG, PNG, WebP, or DNG files.`);
+                }
+            });
+        }
+
+        function compressEditImage(file) {
+            const placeholderIndex = editPhotos.length;
+            editPhotos.push({
+                name: file.name,
+                data: '',
+                type: 'image/jpeg',
+                isRaw: false,
+                processing: true
+            });
+            updateEditPhotoPreview();
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = function() {
+                let { width, height } = img;
+                const maxSize = 1200;
+                
+                if (width > height) {
+                    if (width > maxSize) {
+                        height = (height * maxSize) / width;
+                        width = maxSize;
+                    }
+                } else {
+                    if (height > maxSize) {
+                        width = (width * maxSize) / height;
+                        height = maxSize;
+                    }
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                
+                editPhotos[placeholderIndex] = {
+                    name: file.name.replace(/\.[^/.]+$/, '.jpg'),
+                    data: compressedDataUrl,
+                    type: 'image/jpeg',
+                    isRaw: false,
+                    originalSize: file.size,
+                    compressedSize: compressedDataUrl.length,
+                    processing: false
+                };
+                
+                updateEditPhotoPreview();
+            };
+            
+            img.onerror = function() {
+                editPhotos.splice(placeholderIndex, 1);
+                updateEditPhotoPreview();
+                alert(`❌ Failed to process image: ${file.name}`);
+            };
+            
+            img.src = URL.createObjectURL(file);
+        }
+
+        function updateEditPhotoPreview() {
+            const preview = document.getElementById('edit-photo-preview');
+            if (!preview) return;
+            
+            preview.innerHTML = editPhotos.map((photo, index) => {
+                if (photo.processing) {
+                    return `
+                        <div style="position: relative;">
+                            <div style="width: 80px; height: 80px; background: linear-gradient(45deg, #ffc107, #ff9800); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                                ⏳<br>Processing
+                            </div>
+                            <button type="button" onclick="removeEditPhoto(${index})" style="position: absolute; top: -5px; right: -5px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
+                        </div>
+                    `;
+                } else if (photo.isRaw) {
+                    return `
+                        <div style="position: relative;">
+                            <div style="width: 80px; height: 80px; background: linear-gradient(45deg, #667eea, #764ba2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                                📷 RAW<br>${photo.name.split('.').pop().toUpperCase()}
+                            </div>
+                            <button type="button" onclick="removeEditPhoto(${index})" style="position: absolute; top: -5px; right: -5px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
+                        </div>
+                    `;
+                } else {
+                    const sizeInfo = photo.originalSize ? 
+                        `<div style="position: absolute; bottom: 2px; left: 2px; background: rgba(0,0,0,0.7); color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 4px;">
+                            ${(photo.data.length / 1024 / 1024).toFixed(1)}MB
+                        </div>` : '';
+                    
+                    return `
+                        <div style="position: relative;">
+                            <img src="${photo.data}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                            ${sizeInfo}
+                            <button type="button" onclick="removeEditPhoto(${index})" style="position: absolute; top: -5px; right: -5px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        function removeEditPhoto(index) {
+            editPhotos.splice(index, 1);
+            updateEditPhotoPreview();
+        }
+
+        function setupEditFormSubmission() {
+            const form = document.getElementById('edit-record-form');
+            if (!form) return;
+            
+            // Remove existing listener
+            form.removeEventListener('submit', handleEditFormSubmit);
+            
+            // Add new listener
+            form.addEventListener('submit', handleEditFormSubmit);
+        }
+
+        async function handleEditFormSubmit(e) {
+            e.preventDefault();
+            
+            if (!currentUser) {
+                alert('❌ Please sign in to update records');
+                return;
+            }
+            
+            if (!editingRecordId) {
+                alert('❌ No record selected for editing');
+                return;
+            }
+            
+            // Check if photos are still being processed
+            const processingPhotos = editPhotos.filter(photo => photo.processing);
+            if (processingPhotos.length > 0) {
+                alert('⏳ Please wait for photos to finish processing before saving.');
+                return;
+            }
+            
+            const originalRecord = records.find(r => r.id === editingRecordId);
+            if (!originalRecord) {
+                alert('❌ Original record not found');
+                return;
+            }
+            
+            // Get the original staff member to handle staff warning updates
+            const originalStaffMember = originalRecord.staffMember;
+            const newStaffMember = document.getElementById('edit-staff-member').value;
+            
+            // Create updated record
+            const updatedRecord = {
+                ...originalRecord,
+                category: document.getElementById('edit-category').value,
+                priority: document.getElementById('edit-priority').value,
+                staffMember: newStaffMember,
+                location: document.getElementById('edit-location').value,
+                description: document.getElementById('edit-description').value,
+                photos: [...editPhotos],
+                lastModified: new Date().toISOString()
+            };
+            
+            try {
+                // Update in Firebase
+                await db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(editingRecordId).update(updatedRecord);
+                
+                // Update local record
+                const recordIndex = records.findIndex(r => r.id === editingRecordId);
+                if (recordIndex !== -1) {
+                    records[recordIndex] = updatedRecord;
+                }
+                
+                // Handle staff warning updates if staff member changed
+                if (originalStaffMember !== newStaffMember) {
+                    // Decrement count for original staff member(s)
+                    if (originalStaffMember) {
+                        const originalStaffNames = originalStaffMember.split(',').map(name => name.trim());
+                        originalStaffNames.forEach(name => {
+                            const normalizedName = name.toLowerCase();
+                            if (staffWarnings[normalizedName] && staffWarnings[normalizedName].count > 0) {
+                                staffWarnings[normalizedName].count--;
+                                staffWarnings[normalizedName].warningLevel = getWarningLevel(staffWarnings[normalizedName].count);
+                                saveStaffWarningToFirebase(normalizedName);
+                            }
+                        });
+                    }
+                    
+                    // Increment count for new staff member(s)
+                    if (newStaffMember) {
+                        updateStaffWarning(newStaffMember);
+                    }
+                }
+                
+                // Update displays
+                updateDashboard();
+                updateTimeline();
+                updateStaffWarnings();
+                
+                // Reset edit form
+                resetEditForm();
+                
+                // Switch to timeline to show the updated record
+                showSection('timeline');
+                
+                alert('✅ Record updated successfully!');
+                
+            } catch (error) {
+                console.error('Error updating record:', error);
+                alert('❌ Failed to update record. Please try again.');
+            }
+        }
+
+        function cancelEdit() {
+            resetEditForm();
+            showSection('timeline');
+        }
+
+        function resetEditForm() {
+            // Reset form fields
+            document.getElementById('edit-record-form').reset();
+            
+            // Clear photos and staff selection
+            editPhotos = [];
+            editSelectedStaffMembers = [];
+            editingRecordId = null;
+            
+            // Update UI
+            updateEditPhotoPreview();
+            updateEditSelectedStaffTags();
+            updateEditHiddenInput();
+            
+            // Clear input fields
+            const input = document.getElementById('edit-staff-member-input');
+            if (input) {
+                input.value = '';
+            }
         }
     </script>
 </body>
