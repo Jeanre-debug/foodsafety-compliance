@@ -576,6 +576,127 @@
             border: 1px solid #c3e6cb;
         }
 
+        /* Staff Selector Styles */
+        .staff-selector-container {
+            position: relative;
+        }
+
+        .staff-input-wrapper {
+            position: relative;
+        }
+
+        .staff-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #667eea;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .staff-dropdown-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f3f4;
+            transition: all 0.2s ease;
+        }
+
+        .staff-dropdown-item:hover {
+            background: #f8f9fa;
+        }
+
+        .staff-dropdown-item.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .selected-staff-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .staff-tag {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .staff-tag:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .staff-tag-remove {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .staff-tag-remove:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .staff-list-item {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e1e8ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .staff-list-item:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .staff-list-item .staff-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .staff-list-item .remove-staff-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .staff-list-item .remove-staff-btn:hover {
+            background: #c82333;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -768,7 +889,14 @@
 
                 <div class="form-group">
                     <label for="staff-member">Staff Member(s) Involved</label>
-                    <input type="text" id="staff-member" placeholder="Enter staff member name(s)" required>
+                    <div class="staff-selector-container">
+                        <div class="staff-input-wrapper">
+                            <input type="text" id="staff-member-input" placeholder="Start typing to search staff members..." autocomplete="off">
+                            <div id="staff-dropdown" class="staff-dropdown" style="display: none;"></div>
+                        </div>
+                        <div id="selected-staff-tags" class="selected-staff-tags"></div>
+                        <input type="hidden" id="staff-member" required>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -788,7 +916,7 @@
                         <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">Supports: JPG, PNG, WebP, DNG (Raw)</p>
                         <input type="file" id="photo-input" multiple accept="image/*,.dng" style="display: none;">
                     </div>
-                    <div id="photo-preview" style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                    <div id="photo-preview" style="margin-top: 15px; display: flex; gap: 10px; flex-wrap;"></div>
                 </div>
 
                 <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 30px;">
@@ -882,6 +1010,38 @@
         <div id="settings" class="section">
             <h2 style="margin-bottom: 25px; color: #2c3e50;">⚙️ Settings</h2>
             
+            <!-- Staff Management Section -->
+            <div class="firebase-config" style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">👥 Staff Management</h3>
+                <p style="color: #666; margin-bottom: 20px;">Manage your staff members for easier record creation and consistent tracking.</p>
+                
+                <!-- Add New Staff -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <input type="text" id="new-staff-name" placeholder="Enter staff member name" style="flex: 1; min-width: 200px; padding: 12px; border: 2px solid #e1e8ed; border-radius: 8px; font-size: 0.9rem;">
+                    <button type="button" class="btn" onclick="addStaffMember()" style="background: linear-gradient(45deg, #28a745, #20c997); padding: 12px 20px;">
+                        ➕ Add Staff
+                    </button>
+                </div>
+                
+                <!-- Staff List -->
+                <div id="staff-list-container" style="margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">Current Staff Members</h4>
+                    <div id="staff-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                        <!-- Staff members will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" class="btn" onclick="importDefaultStaff()" style="background: linear-gradient(45deg, #17a2b8, #138496);">
+                        📋 Import Sample Staff
+                    </button>
+                    <button type="button" class="btn" onclick="clearAllStaff()" style="background: linear-gradient(45deg, #6c757d, #495057);">
+                        🗑️ Clear All Staff
+                    </button>
+                </div>
+            </div>
+            
             <div class="firebase-config">
                 <h3 style="margin-bottom: 20px; color: #2c3e50;">Account Information</h3>
                 <div id="account-info" style="margin-bottom: 20px;">
@@ -940,6 +1100,8 @@
         let records = [];
         let selectedPhotos = [];
         let staffWarnings = {}; // Track staff warnings and incident counts
+        let staffMembers = []; // Track staff members for dropdown
+        let selectedStaffMembers = []; // Track selected staff for current record
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1184,14 +1346,16 @@
             
             console.log('Loading user data...');
             
-            // Load records and staff warnings in parallel
+            // Load records, staff warnings, and staff members in parallel
             Promise.all([
                 db.collection('users').doc(currentUser.uid).collection('safetyRecords')
                     .orderBy('date', 'desc')
                     .get(),
                 db.collection('users').doc(currentUser.uid).collection('staffWarnings')
+                    .get(),
+                db.collection('users').doc(currentUser.uid).collection('staffMembers')
                     .get()
-            ]).then(([recordsSnapshot, warningsSnapshot]) => {
+            ]).then(([recordsSnapshot, warningsSnapshot, staffSnapshot]) => {
                 // Load records
                 records = [];
                 recordsSnapshot.forEach((doc) => {
@@ -1207,10 +1371,21 @@
                     staffWarnings[doc.id] = doc.data();
                 });
                 
-                console.log(`Loaded ${records.length} records and ${Object.keys(staffWarnings).length} staff warnings for user`);
+                // Load staff members
+                staffMembers = [];
+                staffSnapshot.forEach((doc) => {
+                    staffMembers.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                console.log(`Loaded ${records.length} records, ${Object.keys(staffWarnings).length} staff warnings, and ${staffMembers.length} staff members for user`);
                 updateDashboard();
                 updateTimeline();
                 updateStaffWarnings();
+                updateStaffList();
+                setupStaffSelector();
             }).catch((error) => {
                 console.error('Error loading user data:', error);
             });
@@ -1678,6 +1853,323 @@
                         console.error('Error refreshing warning levels:', error);
                         alert('❌ Failed to refresh warning levels. Please try again.');
                     });
+            }
+        }
+
+        // Staff Management Functions
+        function addStaffMember() {
+            const input = document.getElementById('new-staff-name');
+            const name = input.value.trim();
+            
+            if (!name) {
+                alert('❌ Please enter a staff member name');
+                return;
+            }
+            
+            if (!currentUser || !isFirebaseInitialized) {
+                alert('❌ Please sign in to add staff members');
+                return;
+            }
+            
+            // Check if staff member already exists
+            if (staffMembers.some(staff => staff.name.toLowerCase() === name.toLowerCase())) {
+                alert('❌ This staff member already exists');
+                return;
+            }
+            
+            const staffMember = {
+                id: Date.now().toString(),
+                name: name,
+                addedDate: new Date().toISOString(),
+                userId: currentUser.uid
+            };
+            
+            // Save to Firebase
+            db.collection('users').doc(currentUser.uid).collection('staffMembers').doc(staffMember.id).set(staffMember)
+                .then(() => {
+                    // Add to local array
+                    staffMembers.push(staffMember);
+                    
+                    // Update UI
+                    updateStaffList();
+                    setupStaffSelector();
+                    
+                    // Clear input
+                    input.value = '';
+                    
+                    alert(`✅ Added ${name} to staff list`);
+                })
+                .catch((error) => {
+                    console.error('Error adding staff member:', error);
+                    alert('❌ Failed to add staff member. Please try again.');
+                });
+        }
+
+        function removeStaffMember(staffId) {
+            const staffMember = staffMembers.find(staff => staff.id === staffId);
+            if (!staffMember) return;
+            
+            const confirmMessage = `Are you sure you want to remove ${staffMember.name} from the staff list?\n\nThis will not affect existing records, but they will no longer appear in the dropdown for new records.`;
+            
+            if (confirm(confirmMessage)) {
+                // Remove from Firebase
+                db.collection('users').doc(currentUser.uid).collection('staffMembers').doc(staffId).delete()
+                    .then(() => {
+                        // Remove from local array
+                        staffMembers = staffMembers.filter(staff => staff.id !== staffId);
+                        
+                        // Update UI
+                        updateStaffList();
+                        setupStaffSelector();
+                        
+                        alert(`✅ Removed ${staffMember.name} from staff list`);
+                    })
+                    .catch((error) => {
+                        console.error('Error removing staff member:', error);
+                        alert('❌ Failed to remove staff member. Please try again.');
+                    });
+            }
+        }
+
+        function updateStaffList() {
+            const container = document.getElementById('staff-list');
+            if (!container) return;
+            
+            if (staffMembers.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">No staff members added yet. Add your first staff member above.</p>';
+                return;
+            }
+            
+            container.innerHTML = staffMembers.map(staff => `
+                <div class="staff-list-item">
+                    <div class="staff-name">${staff.name}</div>
+                    <button class="remove-staff-btn" onclick="removeStaffMember('${staff.id}')">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function importDefaultStaff() {
+            if (!currentUser || !isFirebaseInitialized) {
+                alert('❌ Please sign in to import staff members');
+                return;
+            }
+            
+            const defaultStaff = [
+                'John Smith',
+                'Sarah Johnson',
+                'Michael Brown',
+                'Emily Davis',
+                'David Wilson',
+                'Lisa Anderson',
+                'Robert Taylor',
+                'Jennifer Martinez',
+                'Christopher Garcia',
+                'Amanda Rodriguez',
+                'James Thompson'
+            ];
+            
+            const confirmMessage = `This will add ${defaultStaff.length} sample staff members to your list.\n\nYou can edit or remove them later.\n\nContinue?`;
+            
+            if (confirm(confirmMessage)) {
+                const batch = db.batch();
+                const newStaffMembers = [];
+                
+                defaultStaff.forEach((name, index) => {
+                    const staffId = `default-${Date.now()}-${index}`;
+                    const staffMember = {
+                        id: staffId,
+                        name: name,
+                        addedDate: new Date().toISOString(),
+                        userId: currentUser.uid
+                    };
+                    
+                    const docRef = db.collection('users').doc(currentUser.uid).collection('staffMembers').doc(staffId);
+                    batch.set(docRef, staffMember);
+                    newStaffMembers.push(staffMember);
+                });
+                
+                batch.commit()
+                    .then(() => {
+                        // Add to local array
+                        staffMembers.push(...newStaffMembers);
+                        
+                        // Update UI
+                        updateStaffList();
+                        setupStaffSelector();
+                        
+                        alert(`✅ Added ${defaultStaff.length} sample staff members`);
+                    })
+                    .catch((error) => {
+                        console.error('Error importing staff members:', error);
+                        alert('❌ Failed to import staff members. Please try again.');
+                    });
+            }
+        }
+
+        function clearAllStaff() {
+            if (!currentUser || !isFirebaseInitialized) {
+                alert('❌ Please sign in to clear staff members');
+                return;
+            }
+            
+            if (staffMembers.length === 0) {
+                alert('❌ No staff members to clear');
+                return;
+            }
+            
+            const confirmMessage = `Are you sure you want to remove ALL ${staffMembers.length} staff members?\n\nThis will not affect existing records, but staff will no longer appear in the dropdown for new records.\n\nThis action cannot be undone.`;
+            
+            if (confirm(confirmMessage)) {
+                const batch = db.batch();
+                
+                staffMembers.forEach(staff => {
+                    const docRef = db.collection('users').doc(currentUser.uid).collection('staffMembers').doc(staff.id);
+                    batch.delete(docRef);
+                });
+                
+                batch.commit()
+                    .then(() => {
+                        // Clear local array
+                        staffMembers = [];
+                        
+                        // Update UI
+                        updateStaffList();
+                        setupStaffSelector();
+                        
+                        alert('✅ All staff members cleared');
+                    })
+                    .catch((error) => {
+                        console.error('Error clearing staff members:', error);
+                        alert('❌ Failed to clear staff members. Please try again.');
+                    });
+            }
+        }
+
+        // Staff Selector Functions
+        function setupStaffSelector() {
+            const input = document.getElementById('staff-member-input');
+            const dropdown = document.getElementById('staff-dropdown');
+            
+            if (!input || !dropdown) return;
+            
+            // Clear any existing event listeners
+            input.removeEventListener('input', handleStaffInput);
+            input.removeEventListener('focus', showStaffDropdown);
+            input.removeEventListener('blur', hideStaffDropdown);
+            
+            // Add event listeners
+            input.addEventListener('input', handleStaffInput);
+            input.addEventListener('focus', showStaffDropdown);
+            input.addEventListener('blur', hideStaffDropdown);
+            
+            // Initialize dropdown
+            updateStaffDropdown();
+        }
+
+        function handleStaffInput() {
+            const input = document.getElementById('staff-member-input');
+            const query = input.value.toLowerCase();
+            
+            updateStaffDropdown(query);
+        }
+
+        function showStaffDropdown() {
+            const dropdown = document.getElementById('staff-dropdown');
+            if (dropdown && staffMembers.length > 0) {
+                dropdown.style.display = 'block';
+                updateStaffDropdown();
+            }
+        }
+
+        function hideStaffDropdown() {
+            // Delay hiding to allow for clicks
+            setTimeout(() => {
+                const dropdown = document.getElementById('staff-dropdown');
+                if (dropdown) {
+                    dropdown.style.display = 'none';
+                }
+            }, 200);
+        }
+
+        function updateStaffDropdown(query = '') {
+            const dropdown = document.getElementById('staff-dropdown');
+            if (!dropdown) return;
+            
+            const filteredStaff = staffMembers.filter(staff => 
+                staff.name.toLowerCase().includes(query.toLowerCase()) &&
+                !selectedStaffMembers.some(selected => selected.id === staff.id)
+            );
+            
+            if (filteredStaff.length === 0) {
+                dropdown.innerHTML = '<div class="staff-dropdown-item">No staff members found</div>';
+                return;
+            }
+            
+            dropdown.innerHTML = filteredStaff.map(staff => `
+                <div class="staff-dropdown-item" onclick="selectStaffMember('${staff.id}')">
+                    ${staff.name}
+                </div>
+            `).join('');
+        }
+
+        function selectStaffMember(staffId) {
+            const staffMember = staffMembers.find(staff => staff.id === staffId);
+            if (!staffMember) return;
+            
+            // Add to selected staff
+            if (!selectedStaffMembers.some(staff => staff.id === staffId)) {
+                selectedStaffMembers.push(staffMember);
+                updateSelectedStaffTags();
+                updateHiddenInput();
+            }
+            
+            // Clear input and hide dropdown
+            const input = document.getElementById('staff-member-input');
+            if (input) {
+                input.value = '';
+            }
+            hideStaffDropdown();
+        }
+
+        function removeSelectedStaff(staffId) {
+            selectedStaffMembers = selectedStaffMembers.filter(staff => staff.id !== staffId);
+            updateSelectedStaffTags();
+            updateHiddenInput();
+        }
+
+        function updateSelectedStaffTags() {
+            const container = document.getElementById('selected-staff-tags');
+            if (!container) return;
+            
+            if (selectedStaffMembers.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = selectedStaffMembers.map(staff => `
+                <div class="staff-tag">
+                    <span>${staff.name}</span>
+                    <button class="staff-tag-remove" onclick="removeSelectedStaff('${staff.id}')">×</button>
+                </div>
+            `).join('');
+        }
+
+        function updateHiddenInput() {
+            const hiddenInput = document.getElementById('staff-member');
+            if (hiddenInput) {
+                const staffNames = selectedStaffMembers.map(staff => staff.name).join(', ');
+                hiddenInput.value = staffNames;
+            }
+        }
+
+        function clearStaffSelection() {
+            selectedStaffMembers = [];
+            updateSelectedStaffTags();
+            updateHiddenInput();
+            
+            const input = document.getElementById('staff-member-input');
+            if (input) {
+                input.value = '';
             }
         }
 
@@ -2591,6 +3083,7 @@
             this.reset();
             selectedPhotos = [];
             updatePhotoPreview();
+            clearStaffSelection();
             
             // Switch to dashboard
             showSection('dashboard');
