@@ -697,84 +697,6 @@
             background: #c82333;
         }
 
-        /* Quick Action Button Styles */
-        .quick-action-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 20px;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            text-align: left;
-        }
-
-        .quick-action-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-        }
-
-        .quick-action-btn strong {
-            font-size: 1.1rem;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        /* Template Button Styles */
-        .template-btn {
-            background: rgba(255, 255, 255, 0.9);
-            border: 2px solid #e1e8ed;
-            color: #2c3e50;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .template-btn:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-            transform: translateY(-1px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        /* Recent Items Styles */
-        .recent-item {
-            background: rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            color: #667eea;
-            padding: 4px 10px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
-        }
-
-        .recent-item:hover {
-            background: #667eea;
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        /* Voice Input Styles */
-        .voice-active {
-            background: #dc3545 !important;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -940,126 +862,51 @@
 
         <!-- Add Record Section -->
         <div id="add-record" class="section">
-            <h2 style="margin-bottom: 25px; color: #2c3e50;">➕ Quick Record Entry</h2>
-            
-            <!-- Quick Action Buttons -->
-            <div style="background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);">
-                <h3 style="margin-bottom: 20px; color: #2c3e50; font-size: 1.2rem;">🚀 Quick Actions</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                    <button type="button" class="quick-action-btn" onclick="quickRecord('food-safety', 'high')" style="background: linear-gradient(45deg, #ff6b6b, #ee5a52);">
-                        <span style="font-size: 2rem;">🍽️</span>
-                        <div>
-                            <strong>Food Safety</strong>
-                            <div style="font-size: 0.8rem; opacity: 0.9;">High Priority</div>
-                        </div>
-                    </button>
-                    <button type="button" class="quick-action-btn" onclick="quickRecord('cleaning', 'medium')" style="background: linear-gradient(45deg, #45b749, #3d8b40);">
-                        <span style="font-size: 2rem;">🧽</span>
-                        <div>
-                            <strong>Cleaning Issue</strong>
-                            <div style="font-size: 0.8rem; opacity: 0.9;">Medium Priority</div>
-                        </div>
-                    </button>
-                    <button type="button" class="quick-action-btn" onclick="quickRecord('equipment', 'medium')" style="background: linear-gradient(45deg, #9b59b6, #8e44ad);">
-                        <span style="font-size: 2rem;">🔧</span>
-                        <div>
-                            <strong>Equipment</strong>
-                            <div style="font-size: 0.8rem; opacity: 0.9;">Medium Priority</div>
-                        </div>
-                    </button>
-                    <button type="button" class="quick-action-btn" onclick="quickRecord('training', 'low')" style="background: linear-gradient(45deg, #f7931e, #e67e22);">
-                        <span style="font-size: 2rem;">📚</span>
-                        <div>
-                            <strong>Training</strong>
-                            <div style="font-size: 0.8rem; opacity: 0.9;">Low Priority</div>
-                        </div>
-                    </button>
-                </div>
-                
-                <!-- Smart Templates -->
-                <div style="margin-top: 20px;">
-                    <h4 style="margin-bottom: 15px; color: #2c3e50; font-size: 1rem;">📋 Common Templates</h4>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button type="button" class="template-btn" onclick="loadTemplate('temperature')">🌡️ Temperature Violation</button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('cross-contamination')">⚠️ Cross Contamination</button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('personal-hygiene')">🧼 Personal Hygiene</button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('equipment-maintenance')">🔧 Equipment Maintenance</button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('cleaning-schedule')">📅 Cleaning Schedule</button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('training-reminder')">📚 Training Reminder</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Smart Defaults Info -->
-            <div style="background: rgba(102, 126, 234, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 25px; border-left: 4px solid #667eea;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 1.5rem;">🧠</span>
-                    <div>
-                        <strong style="color: #2c3e50;">Smart Defaults Active</strong>
-                        <div style="font-size: 0.9rem; color: #666;">Location, staff, and priority will auto-fill based on your recent patterns</div>
-                    </div>
-                </div>
-            </div>
+            <h2 style="margin-bottom: 25px; color: #2c3e50;">➕ Add New Record</h2>
             
             <form id="record-form">
-                <!-- Compact Form Layout -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                    <div class="form-group">
-                        <label for="category">Category</label>
-                        <select id="category" required onchange="updateSmartDefaults()">
-                            <option value="">Select Category</option>
-                            <option value="food-safety">🍽️ Food Safety Violation</option>
-                            <option value="health-safety">⚕️ Health & Safety Issue</option>
-                            <option value="cleaning">🧽 Cleaning Standards</option>
-                            <option value="training">📚 Training Required</option>
-                            <option value="equipment">🔧 Equipment Issue</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="priority">Priority Level</label>
-                        <select id="priority" required onchange="updateSmartDefaults()">
-                            <option value="">Select Priority</option>
-                            <option value="low">🟢 Low - Minor issue</option>
-                            <option value="medium">🟡 Medium - Needs attention</option>
-                            <option value="high">🔴 High - Immediate action required</option>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" required>
+                        <option value="">Select Category</option>
+                        <option value="food-safety">🍽️ Food Safety Violation</option>
+                        <option value="health-safety">⚕️ Health & Safety Issue</option>
+                        <option value="cleaning">🧽 Cleaning Standards</option>
+                        <option value="training">📚 Training Required</option>
+                        <option value="equipment">🔧 Equipment Issue</option>
+                    </select>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                    <div class="form-group">
-                        <label for="staff-member">Staff Member(s) Involved</label>
-                        <div class="staff-selector-container">
-                            <div class="staff-input-wrapper">
-                                <input type="text" id="staff-member-input" placeholder="Type staff name or use recent..." autocomplete="off">
-                                <div id="staff-dropdown" class="staff-dropdown" style="display: none;"></div>
-                            </div>
-                            <div id="selected-staff-tags" class="selected-staff-tags"></div>
-                            <input type="hidden" id="staff-member" required>
-                        </div>
-                        <!-- Recent Staff Quick Select -->
-                        <div id="recent-staff" style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;"></div>
-                    </div>
+                <div class="form-group">
+                    <label for="priority">Priority Level</label>
+                    <select id="priority" required>
+                        <option value="">Select Priority</option>
+                        <option value="low">🟢 Low - Minor issue</option>
+                        <option value="medium">🟡 Medium - Needs attention</option>
+                        <option value="high">🔴 High - Immediate action required</option>
+                    </select>
+                </div>
 
-                    <div class="form-group">
-                        <label for="location">Location</label>
-                        <input type="text" id="location" placeholder="Type location or use recent..." required>
-                        <!-- Recent Locations Quick Select -->
-                        <div id="recent-locations" style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;"></div>
+                <div class="form-group">
+                    <label for="staff-member">Staff Member(s) Involved</label>
+                    <div class="staff-selector-container">
+                        <div class="staff-input-wrapper">
+                            <input type="text" id="staff-member-input" placeholder="Start typing to search staff members..." autocomplete="off">
+                            <div id="staff-dropdown" class="staff-dropdown" style="display: none;"></div>
+                        </div>
+                        <div id="selected-staff-tags" class="selected-staff-tags"></div>
+                        <input type="hidden" id="staff-member" required>
                     </div>
                 </div>
 
                 <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" placeholder="Kitchen, Prep Area, Storage, etc." required>
+                </div>
+
+                <div class="form-group">
                     <label for="description">Description & Comments</label>
-                    <div style="position: relative;">
-                        <textarea id="description" placeholder="Describe the issue, actions taken, and follow-up required... (Click 🎤 for voice input)" required style="padding-right: 50px;"></textarea>
-                        <button type="button" id="voice-input-btn" onclick="toggleVoiceInput()" style="position: absolute; right: 10px; top: 10px; background: #667eea; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s ease;" title="Voice Input">🎤</button>
-                    </div>
-                    <!-- Voice Input Status -->
-                    <div id="voice-status" style="display: none; margin-top: 10px; padding: 10px; background: rgba(102, 126, 234, 0.1); border-radius: 8px; color: #667eea; font-size: 0.9rem;">
-                        <span id="voice-status-text">Click 🎤 to start voice input</span>
-                    </div>
+                    <textarea id="description" placeholder="Detailed description of the issue, actions taken, and follow-up required..." required></textarea>
                 </div>
 
                 <div class="form-group">
@@ -1073,35 +920,10 @@
                 </div>
 
                 <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 30px;">
-                    <button type="submit" class="btn" style="background: linear-gradient(45deg, #28a745, #20c997); font-size: 1.1rem; padding: 15px 30px;">💾 Save Record</button>
-                    <button type="button" class="btn" onclick="saveAsDraft()" style="background: linear-gradient(45deg, #6c757d, #495057);">📝 Save as Draft</button>
-                    <button type="button" class="btn" onclick="clearForm()" style="background: linear-gradient(45deg, #dc3545, #c82333);">🗑️ Clear Form</button>
+                    <button type="submit" class="btn">💾 Save Record</button>
+                    <button type="button" class="btn export-btn" onclick="exportData()">📄 Export All Data</button>
                 </div>
             </form>
-        </div>
-
-        <!-- Floating Quick Add Button -->
-        <div id="floating-quick-add" style="position: fixed; bottom: 30px; right: 30px; z-index: 1000;">
-            <button onclick="showQuickAddModal()" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 50%; width: 60px; height: 60px; cursor: pointer; font-size: 1.5rem; box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Quick Add Record">➕</button>
-        </div>
-
-        <!-- Quick Add Modal -->
-        <div id="quick-add-modal" class="modal" style="display: none;">
-            <div class="modal-content" style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
-                <h3 style="margin-bottom: 20px; color: #2c3e50;">⚡ Quick Record</h3>
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50;">What happened?</label>
-                    <textarea id="quick-description" placeholder="Brief description of the issue..." style="width: 100%; padding: 12px; border: 2px solid #e1e8ed; border-radius: 8px; min-height: 80px; resize: vertical;"></textarea>
-                </div>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
-                    <button type="button" onclick="quickSave('high')" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">🔴 High Priority</button>
-                    <button type="button" onclick="quickSave('medium')" style="background: #ffc107; color: #333; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">🟡 Medium Priority</button>
-                    <button type="button" onclick="quickSave('low')" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">🟢 Low Priority</button>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button type="button" onclick="closeQuickAddModal()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; flex: 1;">Cancel</button>
-                </div>
-            </div>
         </div>
 
         <!-- Edit Record Section -->
@@ -1695,7 +1517,6 @@
                 updateStaffWarnings();
                 updateStaffList();
                 setupStaffSelector();
-                updateRecentItems(); // Initialize recent items for quick entry
             }).catch((error) => {
                 console.error('Error loading user data:', error);
             });
@@ -3225,16 +3046,6 @@
             if (sectionId === 'staff-warnings') {
                 updateStaffWarnings();
             }
-            
-            // Check for drafts when viewing add record section
-            if (sectionId === 'add-record') {
-                const draft = localStorage.getItem('draftRecord');
-                if (draft) {
-                    if (confirm('📝 You have a saved draft. Would you like to load it?')) {
-                        loadDraft();
-                    }
-                }
-            }
         }
 
         // Photo upload functionality
@@ -4237,382 +4048,6 @@
                 input.value = '';
             }
         }
-
-        // ===== QUICK RECORD ENTRY FUNCTIONS =====
-
-        // Smart defaults and recent patterns
-        let recentLocations = [];
-        let recentStaff = [];
-        let smartDefaults = {};
-
-        // Quick action buttons
-        function quickRecord(category, priority) {
-            document.getElementById('category').value = category;
-            document.getElementById('priority').value = priority;
-            
-            // Auto-fill common descriptions based on category
-            const descriptions = {
-                'food-safety': 'Food safety violation observed. Immediate action required to prevent contamination.',
-                'cleaning': 'Cleaning standards not met. Area requires attention and proper sanitization.',
-                'equipment': 'Equipment issue identified. Maintenance or repair needed.',
-                'training': 'Training opportunity identified. Staff member needs additional guidance.'
-            };
-            
-            if (descriptions[category]) {
-                document.getElementById('description').value = descriptions[category];
-            }
-            
-            // Apply smart defaults
-            updateSmartDefaults();
-            
-            // Focus on staff input
-            document.getElementById('staff-member-input').focus();
-            
-            // Show success message
-            showQuickMessage(`✅ Quick record setup complete! Category: ${getCategoryName(category)}, Priority: ${priority}`);
-        }
-
-        // Template system
-        function loadTemplate(templateType) {
-            const templates = {
-                'temperature': {
-                    category: 'food-safety',
-                    priority: 'high',
-                    description: 'Temperature violation detected. Food stored outside safe temperature range. Immediate corrective action required.',
-                    location: 'Refrigeration Unit'
-                },
-                'cross-contamination': {
-                    category: 'food-safety',
-                    priority: 'high',
-                    description: 'Cross-contamination risk identified. Raw and cooked foods not properly separated. Immediate action required.',
-                    location: 'Prep Area'
-                },
-                'personal-hygiene': {
-                    category: 'health-safety',
-                    priority: 'medium',
-                    description: 'Personal hygiene standards not met. Staff member needs to follow proper handwashing and PPE procedures.',
-                    location: 'Kitchen'
-                },
-                'equipment-maintenance': {
-                    category: 'equipment',
-                    priority: 'medium',
-                    description: 'Equipment maintenance required. Scheduled maintenance or repair needed to ensure proper operation.',
-                    location: 'Equipment Area'
-                },
-                'cleaning-schedule': {
-                    category: 'cleaning',
-                    priority: 'low',
-                    description: 'Cleaning schedule not followed. Area requires attention to maintain proper sanitation standards.',
-                    location: 'General Area'
-                },
-                'training-reminder': {
-                    category: 'training',
-                    priority: 'low',
-                    description: 'Training reminder needed. Staff member requires additional training or refresher course.',
-                    location: 'Training Area'
-                }
-            };
-            
-            const template = templates[templateType];
-            if (template) {
-                document.getElementById('category').value = template.category;
-                document.getElementById('priority').value = template.priority;
-                document.getElementById('description').value = template.description;
-                document.getElementById('location').value = template.location;
-                
-                updateSmartDefaults();
-                showQuickMessage(`📋 Template loaded: ${templateType.replace('-', ' ')}`);
-            }
-        }
-
-        // Smart defaults system
-        function updateSmartDefaults() {
-            const category = document.getElementById('category').value;
-            const priority = document.getElementById('priority').value;
-            
-            // Auto-suggest location based on category
-            const locationSuggestions = {
-                'food-safety': ['Kitchen', 'Prep Area', 'Storage', 'Refrigeration Unit'],
-                'cleaning': ['Kitchen', 'Dining Area', 'Storage', 'Equipment Area'],
-                'equipment': ['Kitchen', 'Equipment Area', 'Maintenance Room'],
-                'training': ['Kitchen', 'Training Room', 'Office'],
-                'health-safety': ['Kitchen', 'Dining Area', 'Staff Area']
-            };
-            
-            if (locationSuggestions[category] && !document.getElementById('location').value) {
-                document.getElementById('location').value = locationSuggestions[category][0];
-            }
-            
-            // Update recent items
-            updateRecentItems();
-        }
-
-        // Recent items system
-        function updateRecentItems() {
-            // Get recent locations
-            const recentLocationsSet = new Set();
-            records.slice(0, 10).forEach(record => {
-                if (record.location) recentLocationsSet.add(record.location);
-            });
-            recentLocations = Array.from(recentLocationsSet).slice(0, 5);
-            
-            // Get recent staff
-            const recentStaffSet = new Set();
-            records.slice(0, 10).forEach(record => {
-                if (record.staffMember) {
-                    record.staffMember.split(',').forEach(staff => {
-                        recentStaffSet.add(staff.trim());
-                    });
-                }
-            });
-            recentStaff = Array.from(recentStaffSet).slice(0, 5);
-            
-            // Update UI
-            updateRecentLocationsUI();
-            updateRecentStaffUI();
-        }
-
-        function updateRecentLocationsUI() {
-            const container = document.getElementById('recent-locations');
-            if (!container) return;
-            
-            if (recentLocations.length === 0) {
-                container.innerHTML = '';
-                return;
-            }
-            
-            container.innerHTML = recentLocations.map(location => 
-                `<span class="recent-item" onclick="selectRecentLocation('${location}')">📍 ${location}</span>`
-            ).join('');
-        }
-
-        function updateRecentStaffUI() {
-            const container = document.getElementById('recent-staff');
-            if (!container) return;
-            
-            if (recentStaff.length === 0) {
-                container.innerHTML = '';
-                return;
-            }
-            
-            container.innerHTML = recentStaff.map(staff => 
-                `<span class="recent-item" onclick="selectRecentStaff('${staff}')">👤 ${staff}</span>`
-            ).join('');
-        }
-
-        function selectRecentLocation(location) {
-            document.getElementById('location').value = location;
-            showQuickMessage(`📍 Location set: ${location}`);
-        }
-
-        function selectRecentStaff(staff) {
-            // Add to selected staff
-            if (!selectedStaffMembers.some(s => s.name === staff)) {
-                const staffMember = staffMembers.find(s => s.name === staff) || { id: Date.now().toString(), name: staff };
-                selectedStaffMembers.push(staffMember);
-                updateSelectedStaffTags();
-                updateHiddenInput();
-            }
-            showQuickMessage(`👤 Staff added: ${staff}`);
-        }
-
-        // Voice input system
-        let recognition = null;
-        let isListening = false;
-
-        function toggleVoiceInput() {
-            if (!isListening) {
-                startVoiceInput();
-            } else {
-                stopVoiceInput();
-            }
-        }
-
-        function startVoiceInput() {
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert('❌ Voice input is not supported in this browser. Please use Chrome or Edge.');
-                return;
-            }
-
-            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'en-US';
-
-            recognition.onstart = function() {
-                isListening = true;
-                document.getElementById('voice-input-btn').classList.add('voice-active');
-                document.getElementById('voice-status').style.display = 'block';
-                document.getElementById('voice-status-text').textContent = '🎤 Listening... Speak now';
-            };
-
-            recognition.onresult = function(event) {
-                let finalTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    }
-                }
-                
-                if (finalTranscript) {
-                    const currentText = document.getElementById('description').value;
-                    document.getElementById('description').value = currentText + (currentText ? ' ' : '') + finalTranscript;
-                }
-            };
-
-            recognition.onerror = function(event) {
-                console.error('Speech recognition error:', event.error);
-                stopVoiceInput();
-                showQuickMessage('❌ Voice input error. Please try again.');
-            };
-
-            recognition.onend = function() {
-                stopVoiceInput();
-            };
-
-            recognition.start();
-        }
-
-        function stopVoiceInput() {
-            if (recognition) {
-                recognition.stop();
-            }
-            isListening = false;
-            document.getElementById('voice-input-btn').classList.remove('voice-active');
-            document.getElementById('voice-status').style.display = 'none';
-        }
-
-        // Quick save functions
-        function saveAsDraft() {
-            const formData = {
-                category: document.getElementById('category').value,
-                priority: document.getElementById('priority').value,
-                staffMember: document.getElementById('staff-member').value,
-                location: document.getElementById('location').value,
-                description: document.getElementById('description').value,
-                photos: [...selectedPhotos]
-            };
-            
-            // Save to localStorage
-            localStorage.setItem('draftRecord', JSON.stringify(formData));
-            showQuickMessage('📝 Draft saved! You can continue later.');
-        }
-
-        function loadDraft() {
-            const draft = localStorage.getItem('draftRecord');
-            if (draft) {
-                const formData = JSON.parse(draft);
-                document.getElementById('category').value = formData.category || '';
-                document.getElementById('priority').value = formData.priority || '';
-                document.getElementById('location').value = formData.location || '';
-                document.getElementById('description').value = formData.description || '';
-                
-                if (formData.photos) {
-                    selectedPhotos = [...formData.photos];
-                    updatePhotoPreview();
-                }
-                
-                showQuickMessage('📝 Draft loaded!');
-            }
-        }
-
-        function clearForm() {
-            if (confirm('Are you sure you want to clear the form? This will also clear any saved draft.')) {
-                document.getElementById('record-form').reset();
-                selectedPhotos = [];
-                updatePhotoPreview();
-                clearStaffSelection();
-                localStorage.removeItem('draftRecord');
-                showQuickMessage('🗑️ Form cleared');
-            }
-        }
-
-        // Floating quick add modal
-        function showQuickAddModal() {
-            document.getElementById('quick-add-modal').style.display = 'block';
-            document.getElementById('quick-description').focus();
-        }
-
-        function closeQuickAddModal() {
-            document.getElementById('quick-add-modal').style.display = 'none';
-            document.getElementById('quick-description').value = '';
-        }
-
-        async function quickSave(priority) {
-            const description = document.getElementById('quick-description').value.trim();
-            if (!description) {
-                alert('Please enter a description');
-                return;
-            }
-
-            const record = {
-                id: Date.now().toString(),
-                date: new Date().toISOString(),
-                category: 'food-safety', // Default category for quick records
-                priority: priority,
-                staffMember: 'Staff Member', // Default staff
-                location: 'Kitchen', // Default location
-                description: description,
-                photos: [],
-                userId: currentUser.uid,
-                userEmail: currentUser.email,
-                isQuickRecord: true
-            };
-
-            try {
-                await saveRecordToFirebase(record);
-                closeQuickAddModal();
-                showQuickMessage('⚡ Quick record saved!');
-            } catch (error) {
-                console.error('Error saving quick record:', error);
-                alert('❌ Failed to save quick record');
-            }
-        }
-
-        // Utility functions
-        function showQuickMessage(message) {
-            // Create temporary notification
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: rgba(255, 255, 255, 0.95);
-                padding: 15px 20px;
-                border-radius: 10px;
-                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-                z-index: 10000;
-                backdrop-filter: blur(10px);
-                border-left: 4px solid #667eea;
-                animation: slideIn 0.3s ease;
-            `;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 3000);
-        }
-
-        // Add CSS animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 </html>
