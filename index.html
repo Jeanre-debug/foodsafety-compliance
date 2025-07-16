@@ -876,6 +876,7 @@
         <div class="nav-buttons">
             <button class="nav-btn active" onclick="showSection('dashboard')">📊 Dashboard</button>
             <button class="nav-btn" onclick="showSection('add-record')">➕ Add Record</button>
+            <button class="nav-btn" onclick="showSection('updates-improvements')">✅ Updates & Improvements</button>
             <button class="nav-btn" onclick="showSection('timeline')">📋 Timeline</button>
             <button class="nav-btn" onclick="showSection('staff-warnings')">🚨 Staff Warnings</button>
             <button class="nav-btn" onclick="showSection('settings')">⚙️ Settings</button>
@@ -1312,6 +1313,164 @@
             <div id="staff-warnings-container"></div>
         </div>
 
+        <!-- Updates & Improvements Section -->
+        <div id="updates-improvements" class="section">
+            <h2 style="margin-bottom: 25px; color: #2c3e50;">✅ Updates & Improvements</h2>
+            
+            <!-- Info Section -->
+            <div style="background: rgba(40, 167, 69, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 25px; border-left: 4px solid #28a745;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 2rem;">💡</span>
+                    <div>
+                        <h3 style="color: #2c3e50; margin-bottom: 10px;">Document Your Positive Changes</h3>
+                        <p style="color: #666; line-height: 1.5;">
+                            Track improvements, new signs, updated procedures, and positive changes you make to your food safety system. 
+                            This helps demonstrate continuous improvement and proactive management.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Action Buttons -->
+            <div style="background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);">
+                <h3 style="margin-bottom: 20px; color: #2c3e50; font-size: 1.2rem;">🚀 Quick Actions</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <button type="button" class="quick-action-btn" onclick="quickUpdate('new-sign', 'high')" style="background: linear-gradient(45deg, #28a745, #20c997);">
+                        <span style="font-size: 2rem;">📋</span>
+                        <div>
+                            <strong>New Sign Added</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">High Impact</div>
+                        </div>
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="quickUpdate('procedure-update', 'medium')" style="background: linear-gradient(45deg, #17a2b8, #138496);">
+                        <span style="font-size: 2rem;">📝</span>
+                        <div>
+                            <strong>Procedure Updated</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">Medium Impact</div>
+                        </div>
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="quickUpdate('equipment-improvement', 'medium')" style="background: linear-gradient(45deg, #6f42c1, #5a32a3);">
+                        <span style="font-size: 2rem;">🔧</span>
+                        <div>
+                            <strong>Equipment Improvement</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">Medium Impact</div>
+                        </div>
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="quickUpdate('training-completed', 'low')" style="background: linear-gradient(45deg, #fd7e14, #e55a00);">
+                        <span style="font-size: 2rem;">🎓</span>
+                        <div>
+                            <strong>Training Completed</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">Low Impact</div>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- Common Templates -->
+                <div style="margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50; font-size: 1rem;">📋 Common Templates</h4>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" class="template-btn" onclick="loadUpdateTemplate('new-signage')">📋 New Signage Added</button>
+                        <button type="button" class="template-btn" onclick="loadUpdateTemplate('procedure-update')">📝 Procedure Updated</button>
+                        <button type="button" class="template-btn" onclick="loadUpdateTemplate('equipment-upgrade')">🔧 Equipment Upgrade</button>
+                        <button type="button" class="template-btn" onclick="loadUpdateTemplate('training-completed')">🎓 Training Completed</button>
+                        <button type="button" class="template-btn" onclick="loadUpdateTemplate('cleaning-improvement')">🧽 Cleaning Improvement</button>
+                        <button type="button" class="template-btn" onclick="loadUpdateTemplate('general-improvement')">✨ General Improvement</button>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="update-form">
+                <!-- Compact Form Layout -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label for="update-category">Improvement Type</label>
+                        <select id="update-category" required onchange="updateSmartDefaults()">
+                            <option value="">Select Type</option>
+                            <option value="new-sign">📋 New Sign/Label Added</option>
+                            <option value="procedure-update">📝 Procedure Updated</option>
+                            <option value="equipment-improvement">🔧 Equipment Improvement</option>
+                            <option value="training-completed">🎓 Training Completed</option>
+                            <option value="cleaning-improvement">🧽 Cleaning Improvement</option>
+                            <option value="general-improvement">✨ General Improvement</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="update-impact">Impact Level</label>
+                        <select id="update-impact" required onchange="updateSmartDefaults()">
+                            <option value="">Select Impact</option>
+                            <option value="low">🟢 Low - Minor improvement</option>
+                            <option value="medium">🟡 Medium - Notable improvement</option>
+                            <option value="high">🔴 High - Significant improvement</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label for="update-staff">Staff Member(s) Involved</label>
+                        <div class="staff-selector-container">
+                            <div class="staff-input-wrapper">
+                                <input type="text" id="update-staff-input" placeholder="Type staff name or use recent..." autocomplete="off">
+                                <div id="update-staff-dropdown" class="staff-dropdown" style="display: none;"></div>
+                            </div>
+                            <div id="update-selected-staff-tags" class="selected-staff-tags"></div>
+                            <input type="hidden" id="update-staff" required>
+                        </div>
+                        <!-- Recent Staff Quick Select -->
+                        <div id="update-recent-staff" style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="update-location">Location</label>
+                        <input type="text" id="update-location" placeholder="Type location or use recent..." required>
+                        <!-- Recent Locations Quick Select -->
+                        <div id="update-recent-locations" style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="update-description">Description & Details</label>
+                    <div style="position: relative;">
+                        <textarea id="update-description" placeholder="Describe the improvement, what was changed, and the benefits... (Click 🎤 for voice input)" required style="padding-right: 50px;"></textarea>
+                        <button type="button" id="update-voice-input-btn" onclick="toggleUpdateVoiceInput()" style="position: absolute; right: 10px; top: 10px; background: #28a745; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s ease;" title="Voice Input">🎤</button>
+                    </div>
+                    <!-- Voice Input Status -->
+                    <div id="update-voice-status" style="display: none; margin-top: 10px; padding: 10px; background: rgba(40, 167, 69, 0.1); border-radius: 8px; color: #28a745; font-size: 0.9rem;">
+                        <span id="update-voice-status-text">Click 🎤 to start voice input</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Photos (Optional)</label>
+                    <div class="photo-upload" onclick="document.getElementById('update-photo-input').click()">
+                        <p>📸 Click to upload photos or drag & drop</p>
+                        <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">Supports: JPG, PNG, WebP, DNG (Raw)</p>
+                        <p style="font-size: 0.9rem; color: #666;">Perfect for documenting new signs, equipment, or improvements</p>
+                    </div>
+                    <input type="file" id="update-photo-input" multiple accept="image/*" style="display: none;" onchange="handleUpdatePhotoUpload(event)">
+                    <div id="update-photo-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 15px;"></div>
+                </div>
+
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 30px;">
+                    <button type="submit" class="btn" style="background: linear-gradient(45deg, #28a745, #20c997); padding: 15px 30px; font-size: 1.1rem;">
+                        ✅ Save Improvement
+                    </button>
+                    <button type="button" class="btn" onclick="clearUpdateForm()" style="background: linear-gradient(45deg, #6c757d, #495057);">
+                        🗑️ Clear Form
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Recent Improvements -->
+            <div style="margin-top: 40px;">
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">📈 Recent Improvements</h3>
+                <div id="recent-improvements" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                    <!-- Recent improvements will be populated here -->
+                </div>
+            </div>
+        </div>
+
         <!-- Settings Section -->
         <div id="settings" class="section">
             <h2 style="margin-bottom: 25px; color: #2c3e50;">⚙️ Settings</h2>
@@ -1655,7 +1814,7 @@
             
             console.log('Loading user data...');
             
-            // Load records, staff warnings, and staff members in parallel
+            // Load records, staff warnings, staff members, and updates in parallel
             Promise.all([
                 db.collection('users').doc(currentUser.uid).collection('safetyRecords')
                     .orderBy('date', 'desc')
@@ -1663,8 +1822,12 @@
                 db.collection('users').doc(currentUser.uid).collection('staffWarnings')
                     .get(),
                 db.collection('users').doc(currentUser.uid).collection('staffMembers')
+                    .get(),
+                db.collection('updates')
+                    .where('userId', '==', currentUser.uid)
+                    .orderBy('timestamp', 'desc')
                     .get()
-            ]).then(([recordsSnapshot, warningsSnapshot, staffSnapshot]) => {
+            ]).then(([recordsSnapshot, warningsSnapshot, staffSnapshot, updatesSnapshot]) => {
                 // Load records
                 records = [];
                 recordsSnapshot.forEach((doc) => {
@@ -1689,13 +1852,23 @@
                     });
                 });
                 
-                console.log(`Loaded ${records.length} records, ${Object.keys(staffWarnings).length} staff warnings, and ${staffMembers.length} staff members for user`);
+                // Load updates
+                updates = [];
+                updatesSnapshot.forEach((doc) => {
+                    updates.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                console.log(`Loaded ${records.length} records, ${Object.keys(staffWarnings).length} staff warnings, ${staffMembers.length} staff members, and ${updates.length} updates for user`);
                 updateDashboard();
                 updateTimeline();
                 updateStaffWarnings();
                 updateStaffList();
                 setupStaffSelector();
                 updateRecentItems(); // Initialize recent items for quick entry
+                updateRecentImprovements(); // Initialize recent improvements
             }).catch((error) => {
                 console.error('Error loading user data:', error);
             });
@@ -2750,10 +2923,16 @@
                 const thisMonthRecords = records.filter(r => new Date(r.date) >= thisMonth);
                 const highPriorityRecords = records.filter(r => r.priority === 'high');
                 const recordsWithPhotos = records.filter(r => r.photos.length > 0);
+                const thisMonthUpdates = updates.filter(u => new Date(u.date) >= thisMonth);
+                const highImpactUpdates = updates.filter(u => u.impact === 'high');
                 
                 doc.text(`This Month: ${thisMonthRecords.length}`, 120, 58);
                 doc.text(`High Priority: ${highPriorityRecords.length}`, 120, 63);
                 doc.text(`With Photos: ${recordsWithPhotos.length}`, 120, 68);
+                
+                // Add updates statistics on a new line
+                doc.text(`Updates: ${updates.length}`, 20, 73);
+                doc.text(`This Month Updates: ${thisMonthUpdates.length}`, 120, 73);
                 
                 let yPosition = 90; // Start a bit lower to ensure proper spacing
                 let pageNumber = 1;
@@ -3136,6 +3315,133 @@
                     yPosition = tableY + 10;
                 }
                 
+                // Add Updates & Improvements Section
+                if (updates && updates.length > 0) {
+                    // Check if we need a new page for updates section
+                    if (yPosition > 200) {
+                        doc.addPage();
+                        pageNumber++;
+                        yPosition = 40;
+                        
+                        // Add page header
+                        doc.setFillColor(102, 126, 234);
+                        doc.rect(0, 0, 210, 25, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(16);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
+                        doc.setFontSize(10);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
+                    }
+                    
+                    // Updates section header
+                    doc.setFillColor(40, 167, 69);
+                    doc.rect(15, yPosition - 5, 180, 15, 'F');
+                    doc.setDrawColor(40, 167, 69);
+                    doc.setLineWidth(0.5);
+                    doc.rect(15, yPosition - 5, 180, 15, 'S');
+                    
+                    doc.setTextColor(40, 167, 69);
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Updates & Improvements', 20, yPosition + 3);
+                    yPosition += 25;
+                    
+                    // Sort updates by date (newest first)
+                    const sortedUpdates = [...updates].sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
+                    // Updates table
+                    let updateTableY = yPosition;
+                    const updateTableX = 20;
+                    const updateColWidths = [50, 40, 50, 60]; // Type, Impact, Staff, Date
+                    
+                    // Table header
+                    doc.setFillColor(248, 249, 250);
+                    doc.rect(updateTableX, updateTableY - 3, 160, 10, 'F');
+                    doc.setDrawColor(40, 167, 69);
+                    doc.setLineWidth(0.3);
+                    doc.rect(updateTableX, updateTableY - 3, 160, 10, 'S');
+                    
+                    doc.setTextColor(44, 62, 80);
+                    doc.setFontSize(9);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Type', updateTableX + 2, updateTableY + 2);
+                    doc.text('Impact', updateTableX + 55, updateTableY + 2);
+                    doc.text('Staff', updateTableX + 100, updateTableY + 2);
+                    doc.text('Date', updateTableX + 145, updateTableY + 2);
+                    updateTableY += 12;
+                    
+                    // Table rows
+                    sortedUpdates.forEach((update, index) => {
+                        // Check if we need a new page
+                        if (updateTableY > 250) {
+                            doc.addPage();
+                            pageNumber++;
+                            updateTableY = 40;
+                            
+                            // Add page header
+                            doc.setFillColor(102, 126, 234);
+                            doc.rect(0, 0, 210, 25, 'F');
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFontSize(16);
+                            doc.setFont(undefined, 'bold');
+                            doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
+                            doc.setFontSize(10);
+                            doc.setFont(undefined, 'normal');
+                            doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
+                        }
+                        
+                        // Row background (alternating colors)
+                        const rowColor = index % 2 === 0 ? [255, 255, 255] : [248, 249, 250];
+                        doc.setFillColor(rowColor[0], rowColor[1], rowColor[2]);
+                        doc.rect(updateTableX, updateTableY - 2, 160, 8, 'F');
+                        doc.setDrawColor(225, 232, 237);
+                        doc.setLineWidth(0.2);
+                        doc.rect(updateTableX, updateTableY - 2, 160, 8, 'S');
+                        
+                        // Update type
+                        doc.setTextColor(44, 62, 80);
+                        doc.setFontSize(8);
+                        doc.setFont(undefined, 'normal');
+                        const displayType = getUpdateCategoryName(update.category).length > 12 ? 
+                            getUpdateCategoryName(update.category).substring(0, 12) + '...' : 
+                            getUpdateCategoryName(update.category);
+                        doc.text(displayType, updateTableX + 2, updateTableY + 2);
+                        
+                        // Impact level with color
+                        const impactColors = {
+                            'low': [40, 167, 69],
+                            'medium': [255, 193, 7],
+                            'high': [220, 53, 69]
+                        };
+                        const impactColor = impactColors[update.impact] || [108, 117, 125];
+                        doc.setTextColor(impactColor[0], impactColor[1], impactColor[2]);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(update.impact.toUpperCase(), updateTableX + 55, updateTableY + 2);
+                        
+                        // Staff member
+                        doc.setTextColor(44, 62, 80);
+                        doc.setFont(undefined, 'normal');
+                        const displayStaff = update.staffMember && update.staffMember.length > 10 ? 
+                            update.staffMember.substring(0, 10) + '...' : 
+                            (update.staffMember || 'N/A');
+                        doc.text(displayStaff, updateTableX + 100, updateTableY + 2);
+                        
+                        // Date
+                        const updateDate = new Date(update.date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                        });
+                        doc.text(updateDate, updateTableX + 145, updateTableY + 2);
+                        
+                        updateTableY += 10;
+                    });
+                    
+                    yPosition = updateTableY + 10;
+                }
+                
                 // Add professional footer - more compact
                 const totalPages = doc.getNumberOfPages();
                 for (let page = 1; page <= totalPages; page++) {
@@ -3214,6 +3520,7 @@
                 const btnText = btn.textContent;
                 if ((sectionId === 'dashboard' && btnText.includes('Dashboard')) ||
                     (sectionId === 'add-record' && btnText.includes('Add Record')) ||
+                    (sectionId === 'updates-improvements' && btnText.includes('Updates & Improvements')) ||
                     (sectionId === 'timeline' && btnText.includes('Timeline')) ||
                     (sectionId === 'staff-warnings' && btnText.includes('Staff Warnings')) ||
                     (sectionId === 'settings' && btnText.includes('Settings'))) {
@@ -4599,6 +4906,531 @@
                 }, 300);
             }, 3000);
         }
+
+        // ===== UPDATES & IMPROVEMENTS FUNCTIONS =====
+
+        // Data storage for updates
+        let updates = [];
+        let updatePhotos = [];
+        let updateSelectedStaffMembers = [];
+
+        // Quick action buttons for updates
+        function quickUpdate(category, impact) {
+            document.getElementById('update-category').value = category;
+            document.getElementById('update-impact').value = impact;
+            
+            // Auto-fill common descriptions based on category
+            const descriptions = {
+                'new-sign': 'New sign or label added to improve safety and compliance.',
+                'procedure-update': 'Procedure updated to enhance efficiency and safety standards.',
+                'equipment-improvement': 'Equipment improvement completed to enhance functionality.',
+                'training-completed': 'Training session completed successfully. Staff member now certified.'
+            };
+            
+            if (descriptions[category]) {
+                document.getElementById('update-description').value = descriptions[category];
+            }
+            
+            // Apply smart defaults
+            updateUpdateSmartDefaults();
+            
+            // Focus on staff input
+            document.getElementById('update-staff-input').focus();
+            
+            // Show success message
+            showQuickMessage(`✅ Quick update setup complete! Type: ${getUpdateCategoryName(category)}, Impact: ${impact}`);
+        }
+
+        // Template system for updates
+        function loadUpdateTemplate(templateType) {
+            const templates = {
+                'new-signage': {
+                    category: 'new-sign',
+                    impact: 'high',
+                    description: 'New safety signage added to improve compliance and staff awareness. Sign clearly displays important safety information.',
+                    location: 'Kitchen'
+                },
+                'procedure-update': {
+                    category: 'procedure-update',
+                    impact: 'medium',
+                    description: 'Procedure updated to reflect current best practices and improve efficiency. Staff has been informed of changes.',
+                    location: 'Kitchen'
+                },
+                'equipment-upgrade': {
+                    category: 'equipment-improvement',
+                    impact: 'medium',
+                    description: 'Equipment upgrade completed. New features improve safety and efficiency of operations.',
+                    location: 'Equipment Area'
+                },
+                'training-completed': {
+                    category: 'training-completed',
+                    impact: 'low',
+                    description: 'Training session completed successfully. Staff member has demonstrated competency in required procedures.',
+                    location: 'Training Area'
+                },
+                'cleaning-improvement': {
+                    category: 'cleaning-improvement',
+                    impact: 'medium',
+                    description: 'Cleaning improvement implemented. New procedures or equipment enhance sanitation standards.',
+                    location: 'Kitchen'
+                },
+                'general-improvement': {
+                    category: 'general-improvement',
+                    impact: 'medium',
+                    description: 'General improvement implemented to enhance overall food safety and operational efficiency.',
+                    location: 'General Area'
+                }
+            };
+            
+            const template = templates[templateType];
+            if (template) {
+                document.getElementById('update-category').value = template.category;
+                document.getElementById('update-impact').value = template.impact;
+                document.getElementById('update-description').value = template.description;
+                document.getElementById('update-location').value = template.location;
+                
+                updateUpdateSmartDefaults();
+                showQuickMessage(`📋 Update template loaded: ${templateType.replace('-', ' ')}`);
+            }
+        }
+
+        // Smart defaults for updates
+        function updateUpdateSmartDefaults() {
+            const category = document.getElementById('update-category').value;
+            const impact = document.getElementById('update-impact').value;
+            
+            // Auto-suggest location based on category
+            const locationSuggestions = {
+                'new-sign': ['Kitchen', 'Prep Area', 'Storage', 'Dining Area'],
+                'procedure-update': ['Kitchen', 'Office', 'Training Room'],
+                'equipment-improvement': ['Kitchen', 'Equipment Area', 'Maintenance Room'],
+                'training-completed': ['Kitchen', 'Training Room', 'Office'],
+                'cleaning-improvement': ['Kitchen', 'Dining Area', 'Storage'],
+                'general-improvement': ['Kitchen', 'General Area', 'Office']
+            };
+            
+            if (locationSuggestions[category] && !document.getElementById('update-location').value) {
+                document.getElementById('update-location').value = locationSuggestions[category][0];
+            }
+            
+            // Update recent items
+            updateUpdateRecentItems();
+        }
+
+        // Recent items for updates
+        function updateUpdateRecentItems() {
+            // Get recent locations from updates
+            const recentLocationsSet = new Set();
+            updates.slice(0, 10).forEach(update => {
+                if (update.location) recentLocationsSet.add(update.location);
+            });
+            const updateRecentLocations = Array.from(recentLocationsSet).slice(0, 5);
+            
+            // Get recent staff from updates
+            const recentStaffSet = new Set();
+            updates.slice(0, 10).forEach(update => {
+                if (update.staffMember) {
+                    update.staffMember.split(',').forEach(staff => {
+                        recentStaffSet.add(staff.trim());
+                    });
+                }
+            });
+            const updateRecentStaff = Array.from(recentStaffSet).slice(0, 5);
+            
+            // Update UI
+            updateUpdateRecentLocationsUI(updateRecentLocations);
+            updateUpdateRecentStaffUI(updateRecentStaff);
+        }
+
+        function updateUpdateRecentLocationsUI(recentLocations) {
+            const container = document.getElementById('update-recent-locations');
+            if (!container) return;
+            
+            if (recentLocations.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = recentLocations.map(location => 
+                `<span class="recent-item" onclick="selectUpdateRecentLocation('${location}')">📍 ${location}</span>`
+            ).join('');
+        }
+
+        function updateUpdateRecentStaffUI(recentStaff) {
+            const container = document.getElementById('update-recent-staff');
+            if (!container) return;
+            
+            if (recentStaff.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = recentStaff.map(staff => 
+                `<span class="recent-item" onclick="selectUpdateRecentStaff('${staff}')">👤 ${staff}</span>`
+            ).join('');
+        }
+
+        function selectUpdateRecentLocation(location) {
+            document.getElementById('update-location').value = location;
+            showQuickMessage(`📍 Location set: ${location}`);
+        }
+
+        function selectUpdateRecentStaff(staff) {
+            // Add to selected staff
+            if (!updateSelectedStaffMembers.some(s => s.name === staff)) {
+                const staffMember = staffMembers.find(s => s.name === staff) || { id: Date.now().toString(), name: staff };
+                updateSelectedStaffMembers.push(staffMember);
+                updateUpdateSelectedStaffTags();
+                updateUpdateHiddenInput();
+            }
+            showQuickMessage(`👤 Staff added: ${staff}`);
+        }
+
+        // Staff selection for updates
+        function setupUpdateStaffSelector() {
+            const input = document.getElementById('update-staff-input');
+            const dropdown = document.getElementById('update-staff-dropdown');
+            
+            input.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                if (query.length < 2) {
+                    dropdown.style.display = 'none';
+                    return;
+                }
+                
+                const filteredStaff = staffMembers.filter(staff => 
+                    staff.name.toLowerCase().includes(query)
+                );
+                
+                if (filteredStaff.length > 0) {
+                    dropdown.innerHTML = filteredStaff.map(staff => 
+                        `<div class="staff-option" onclick="selectUpdateStaff('${staff.name}')">👤 ${staff.name}</div>`
+                    ).join('');
+                    dropdown.style.display = 'block';
+                } else {
+                    dropdown.style.display = 'none';
+                }
+            });
+            
+            input.addEventListener('blur', function() {
+                setTimeout(() => {
+                    dropdown.style.display = 'none';
+                }, 200);
+            });
+        }
+
+        function selectUpdateStaff(staffName) {
+            if (!updateSelectedStaffMembers.some(s => s.name === staffName)) {
+                const staffMember = staffMembers.find(s => s.name === staffName) || { id: Date.now().toString(), name: staffName };
+                updateSelectedStaffMembers.push(staffMember);
+                updateUpdateSelectedStaffTags();
+                updateUpdateHiddenInput();
+            }
+            document.getElementById('update-staff-input').value = '';
+            document.getElementById('update-staff-dropdown').style.display = 'none';
+        }
+
+        function updateUpdateSelectedStaffTags() {
+            const container = document.getElementById('update-selected-staff-tags');
+            container.innerHTML = updateSelectedStaffMembers.map(staff => 
+                `<span class="staff-tag">👤 ${staff.name} <button onclick="removeUpdateStaff('${staff.name}')" class="remove-staff">×</button></span>`
+            ).join('');
+        }
+
+        function removeUpdateStaff(staffName) {
+            updateSelectedStaffMembers = updateSelectedStaffMembers.filter(s => s.name !== staffName);
+            updateUpdateSelectedStaffTags();
+            updateUpdateHiddenInput();
+        }
+
+        function updateUpdateHiddenInput() {
+            const staffNames = updateSelectedStaffMembers.map(s => s.name).join(', ');
+            document.getElementById('update-staff').value = staffNames;
+        }
+
+        function clearUpdateStaffSelection() {
+            updateSelectedStaffMembers = [];
+            updateUpdateSelectedStaffTags();
+            updateUpdateHiddenInput();
+        }
+
+        // Photo handling for updates
+        function handleUpdatePhotoUpload(event) {
+            const files = Array.from(event.target.files);
+            files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        updatePhotos.push({
+                            name: file.name,
+                            data: e.target.result,
+                            size: file.size
+                        });
+                        updateUpdatePhotoPreview();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function updateUpdatePhotoPreview() {
+            const container = document.getElementById('update-photo-preview');
+            container.innerHTML = updatePhotos.map((photo, index) => `
+                <div class="photo-item">
+                    <img src="${photo.data}" alt="Photo ${index + 1}" onclick="viewUpdatePhoto(${index})">
+                    <button onclick="removeUpdatePhoto(${index})" class="remove-photo">×</button>
+                </div>
+            `).join('');
+        }
+
+        function removeUpdatePhoto(index) {
+            updatePhotos.splice(index, 1);
+            updateUpdatePhotoPreview();
+        }
+
+        function viewUpdatePhoto(index) {
+            const photo = updatePhotos[index];
+            document.getElementById('modal-image').src = photo.data;
+            document.getElementById('photo-modal').style.display = 'block';
+        }
+
+        // Voice input for updates
+        let updateRecognition = null;
+        let isUpdateListening = false;
+
+        function toggleUpdateVoiceInput() {
+            if (!isUpdateListening) {
+                startUpdateVoiceInput();
+            } else {
+                stopUpdateVoiceInput();
+            }
+        }
+
+        function startUpdateVoiceInput() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('❌ Voice input is not supported in this browser. Please use Chrome or Edge.');
+                return;
+            }
+
+            updateRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            updateRecognition.continuous = true;
+            updateRecognition.interimResults = true;
+            updateRecognition.lang = 'en-US';
+
+            updateRecognition.onstart = function() {
+                isUpdateListening = true;
+                document.getElementById('update-voice-input-btn').classList.add('voice-active');
+                document.getElementById('update-voice-status').style.display = 'block';
+                document.getElementById('update-voice-status-text').textContent = '🎤 Listening... Speak now';
+            };
+
+            updateRecognition.onresult = function(event) {
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    }
+                }
+                
+                if (finalTranscript) {
+                    const currentText = document.getElementById('update-description').value;
+                    document.getElementById('update-description').value = currentText + (currentText ? ' ' : '') + finalTranscript;
+                }
+            };
+
+            updateRecognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                stopUpdateVoiceInput();
+                showQuickMessage('❌ Voice input error. Please try again.');
+            };
+
+            updateRecognition.onend = function() {
+                stopUpdateVoiceInput();
+            };
+
+            updateRecognition.start();
+        }
+
+        function stopUpdateVoiceInput() {
+            if (updateRecognition) {
+                updateRecognition.stop();
+            }
+            isUpdateListening = false;
+            document.getElementById('update-voice-input-btn').classList.remove('voice-active');
+            document.getElementById('update-voice-status').style.display = 'none';
+        }
+
+        // Form handling for updates
+        function clearUpdateForm() {
+            if (confirm('Are you sure you want to clear the update form?')) {
+                document.getElementById('update-form').reset();
+                updatePhotos = [];
+                updateUpdatePhotoPreview();
+                clearUpdateStaffSelection();
+                showQuickMessage('🗑️ Update form cleared');
+            }
+        }
+
+        // Save update to Firebase
+        async function saveUpdateToFirebase(update) {
+            if (!isFirebaseInitialized || !currentUser) {
+                throw new Error('Firebase not initialized or user not signed in');
+            }
+
+            try {
+                // Upload photos to Firebase Storage
+                const photoUrls = [];
+                for (const photo of update.photos) {
+                    const photoRef = storage.ref(`updates/${currentUser.uid}/${Date.now()}_${photo.name}`);
+                    const response = await fetch(photo.data);
+                    const blob = await response.blob();
+                    await photoRef.put(blob);
+                    const url = await photoRef.getDownloadURL();
+                    photoUrls.push(url);
+                }
+
+                // Save update to Firestore
+                const updateData = {
+                    ...update,
+                    photos: photoUrls,
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                await db.collection('updates').add(updateData);
+                
+                // Add to local array
+                updates.unshift(updateData);
+                
+                // Update UI
+                updateRecentImprovements();
+                
+                return updateData;
+            } catch (error) {
+                console.error('Error saving update:', error);
+                throw error;
+            }
+        }
+
+        // Load updates from Firebase
+        async function loadUpdatesFromFirebase() {
+            if (!isFirebaseInitialized || !currentUser) return;
+
+            try {
+                const snapshot = await db.collection('updates')
+                    .where('userId', '==', currentUser.uid)
+                    .orderBy('timestamp', 'desc')
+                    .get();
+
+                updates = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                updateRecentImprovements();
+            } catch (error) {
+                console.error('Error loading updates:', error);
+            }
+        }
+
+        // Update recent improvements UI
+        function updateRecentImprovements() {
+            const container = document.getElementById('recent-improvements');
+            if (!container) return;
+
+            const recentUpdates = updates.slice(0, 6); // Show last 6 updates
+            
+            container.innerHTML = recentUpdates.map(update => `
+                <div class="update-card" style="background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);">
+                    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 15px;">
+                        <span style="font-size: 1.5rem;">${getUpdateCategoryIcon(update.category)}</span>
+                        <span style="padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; ${getImpactStyle(update.impact)}">
+                            ${update.impact.toUpperCase()}
+                        </span>
+                    </div>
+                    <h4 style="margin-bottom: 10px; color: #2c3e50;">${getUpdateCategoryName(update.category)}</h4>
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px; line-height: 1.4;">${update.description}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: #888;">
+                        <span>📍 ${update.location}</span>
+                        <span>👤 ${update.staffMember || 'N/A'}</span>
+                    </div>
+                    ${update.photos && update.photos.length > 0 ? `
+                        <div style="margin-top: 10px;">
+                            <span style="font-size: 0.8rem; color: #888;">📸 ${update.photos.length} photo(s)</span>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Utility functions for updates
+        function getUpdateCategoryName(category) {
+            const names = {
+                'new-sign': 'New Sign/Label Added',
+                'procedure-update': 'Procedure Updated',
+                'equipment-improvement': 'Equipment Improvement',
+                'training-completed': 'Training Completed',
+                'cleaning-improvement': 'Cleaning Improvement',
+                'general-improvement': 'General Improvement'
+            };
+            return names[category] || category;
+        }
+
+        function getUpdateCategoryIcon(category) {
+            const icons = {
+                'new-sign': '📋',
+                'procedure-update': '📝',
+                'equipment-improvement': '🔧',
+                'training-completed': '🎓',
+                'cleaning-improvement': '🧽',
+                'general-improvement': '✨'
+            };
+            return icons[category] || '✨';
+        }
+
+        function getImpactStyle(impact) {
+            const styles = {
+                'low': 'background: #d4edda; color: #155724;',
+                'medium': 'background: #fff3cd; color: #856404;',
+                'high': 'background: #f8d7da; color: #721c24;'
+            };
+            return styles[impact] || 'background: #e2e3e5; color: #383d41;';
+        }
+
+        // Setup update form event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup update form
+            const updateForm = document.getElementById('update-form');
+            if (updateForm) {
+                updateForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = {
+                        id: Date.now().toString(),
+                        date: new Date().toISOString(),
+                        category: document.getElementById('update-category').value,
+                        impact: document.getElementById('update-impact').value,
+                        staffMember: document.getElementById('update-staff').value,
+                        location: document.getElementById('update-location').value,
+                        description: document.getElementById('update-description').value,
+                        photos: [...updatePhotos]
+                    };
+
+                    try {
+                        await saveUpdateToFirebase(formData);
+                        clearUpdateForm();
+                        showQuickMessage('✅ Improvement saved successfully!');
+                    } catch (error) {
+                        console.error('Error saving improvement:', error);
+                        alert('❌ Failed to save improvement. Please try again.');
+                    }
+                });
+            }
+
+            // Setup update staff selector
+            setupUpdateStaffSelector();
+        });
 
         // Add CSS animations
         const style = document.createElement('style');
