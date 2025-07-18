@@ -113,6 +113,22 @@
             backdrop-filter: blur(10px);
             display: none;
             z-index: 1000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .offline-mode {
+            background: rgba(255, 193, 7, 0.1) !important;
+            border: 2px solid rgba(255, 193, 7, 0.3) !important;
+        }
+
+        .offline-mode::before {
+            content: '📴 ';
+            margin-right: 5px;
         }
 
         .nav-buttons {
@@ -860,6 +876,9 @@
             <div class="firebase-status">
                 <div class="status-indicator" id="firebase-indicator"></div>
                 <span id="firebase-status-text">Not connected</span>
+                <div id="offline-indicator" style="display: none; margin-left: 10px; padding: 4px 8px; background: #ffc107; color: #856404; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">
+                    📴 OFFLINE
+                </div>
             </div>
         </div>
 
@@ -1530,6 +1549,7 @@
                 
                 <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 20px;">
                     <button type="button" class="btn" onclick="debugCurrentState()" style="background: linear-gradient(45deg, #6f42c1, #5a32a3);">🔍 Debug Status</button>
+                    <button type="button" class="btn" onclick="manualSync()" style="background: linear-gradient(45deg, #17a2b8, #138496);">🔄 Manual Sync</button>
                     <button type="button" class="btn" onclick="exportData()">📄 Export All Data</button>
                     <button type="button" class="btn" onclick="signOut()" style="background: #dc3545;">🚪 Sign Out</button>
                 </div>
@@ -1571,6 +1591,15 @@
         let selectedStaffMembers = []; // Track selected staff for current record
         let editSelectedStaffMembers = []; // Track selected staff for edit form
         let editingRecordId = null; // Track which record is being edited
+        
+        // Offline mode variables
+        let isOnline = navigator.onLine;
+        let offlineQueue = []; // Queue for operations when offline
+        let pendingRecords = []; // Records waiting to be synced
+        let pendingUpdates = []; // Updates waiting to be synced
+        let pendingStaffWarnings = []; // Staff warnings waiting to be synced
+        let pendingStaffMembers = []; // Staff members waiting to be synced
+        let syncInProgress = false;
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1592,6 +1621,12 @@
             
             // Setup form handlers
             setupAuthForms();
+            
+            // Setup offline/online detection
+            setupOfflineDetection();
+            
+            // Load offline data
+            loadOfflineData();
         });
 
 
@@ -1870,6 +1905,10 @@
                 });
                 
                 console.log(`Loaded ${records.length} records, ${Object.keys(staffWarnings).length} staff warnings, ${staffMembers.length} staff members, and ${updates.length} updates for user`);
+                
+                // Save data locally for offline access
+                saveOfflineData();
+                
                 updateDashboard();
                 updateTimeline();
                 updateStaffWarnings();
@@ -1961,18 +2000,38 @@
         }
 
         async function saveStaffWarningToFirebase(staffKey) {
-            if (!currentUser || !isFirebaseInitialized) return;
+            if (!currentUser) return;
             
-            try {
-                const staffData = staffWarnings[staffKey];
-                if (staffData) {
-                    await db.collection('users').doc(currentUser.uid).collection('staffWarnings').doc(staffKey).set(staffData);
-                } else {
-                    // Remove from Firebase if count is 0
-                    await db.collection('users').doc(currentUser.uid).collection('staffWarnings').doc(staffKey).delete();
+            const staffData = staffWarnings[staffKey];
+            
+            // Save locally for offline access
+            saveOfflineData();
+            
+            // If online, save to Firebase
+            if (isOnline && isFirebaseInitialized) {
+                try {
+                    if (staffData) {
+                        await db.collection('users').doc(currentUser.uid).collection('staffWarnings').doc(staffKey).set(staffData);
+                    } else {
+                        // Remove from Firebase if count is 0
+                        await db.collection('users').doc(currentUser.uid).collection('staffWarnings').doc(staffKey).delete();
+                    }
+                } catch (error) {
+                    console.error('Error saving staff warning to Firebase:', error);
+                    // Add to pending queue for later sync
+                    pendingStaffWarnings.push({
+                        id: staffKey,
+                        data: staffData
+                    });
+                    saveOfflineData();
                 }
-            } catch (error) {
-                console.error('Error saving staff warning to Firebase:', error);
+            } else {
+                // Offline mode - add to pending queue
+                pendingStaffWarnings.push({
+                    id: staffKey,
+                    data: staffData
+                });
+                saveOfflineData();
             }
         }
 
@@ -2118,12 +2177,18 @@
             // Show alert with summary
             const summary = `
 🔍 DEBUG SUMMARY:
+• Connection: ${isOnline ? '✅ Online' : '📴 Offline'}
 • Firebase: ${isFirebaseInitialized ? '✅ Connected' : '❌ Not connected'}
 • User: ${currentUser ? '✅ ' + currentUser.email : '❌ Not signed in'}
 • Records: ${records.length}
 • Staff Warnings: ${Object.keys(staffWarnings).length}
 • Staff Members: ${staffMembers.length}
 • Updates: ${updates ? updates.length : 'Not loaded'}
+• Pending Sync:
+  - Records: ${pendingRecords.length}
+  - Updates: ${pendingUpdates.length}
+  - Staff Warnings: ${pendingStaffWarnings.length}
+  - Staff Members: ${pendingStaffMembers.length}
             `;
             alert(summary);
         }
@@ -2418,25 +2483,45 @@
                 userId: currentUser.uid
             };
             
-            // Save to Firebase
-            db.collection('users').doc(currentUser.uid).collection('staffMembers').doc(staffMember.id).set(staffMember)
-                .then(() => {
-                    // Add to local array
-                    staffMembers.push(staffMember);
-                    
-                    // Update UI
-                    updateStaffList();
-                    setupStaffSelector();
-                    
-                    // Clear input
-                    input.value = '';
-                    
-                    alert(`✅ Added ${name} to staff list`);
-                })
-                .catch((error) => {
-                    console.error('Error adding staff member:', error);
-                    alert('❌ Failed to add staff member. Please try again.');
+            // Add to local array immediately
+            staffMembers.push(staffMember);
+            
+            // Update UI
+            updateStaffList();
+            setupStaffSelector();
+            
+            // Save locally for offline access
+            saveOfflineData();
+            
+            // Clear input
+            input.value = '';
+            
+            // If online, save to Firebase
+            if (isOnline && isFirebaseInitialized) {
+                db.collection('users').doc(currentUser.uid).collection('staffMembers').doc(staffMember.id).set(staffMember)
+                    .then(() => {
+                        console.log('✅ Staff member saved to Firebase');
+                        alert(`✅ Added ${name} to staff list`);
+                    })
+                    .catch((error) => {
+                        console.error('Error saving to Firebase:', error);
+                        // Add to pending queue for later sync
+                        pendingStaffMembers.push({
+                            id: staffMember.id,
+                            data: staffMember
+                        });
+                        saveOfflineData();
+                        alert(`📴 Added ${name} locally - will sync when online`);
+                    });
+            } else {
+                // Offline mode - add to pending queue
+                pendingStaffMembers.push({
+                    id: staffMember.id,
+                    data: staffMember
                 });
+                saveOfflineData();
+                alert(`📴 Added ${name} locally - will sync when online`);
+            }
         }
 
         function removeStaffMember(staffId) {
@@ -3537,6 +3622,256 @@
             statusText.textContent = message;
         }
 
+        // Offline Mode Functions
+        function setupOfflineDetection() {
+            // Listen for online/offline events
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+            
+            // Initial status check
+            updateConnectionStatus();
+        }
+
+        function handleOnline() {
+            console.log('🌐 Internet connection restored');
+            isOnline = true;
+            updateConnectionStatus();
+            
+            // Attempt to sync pending data
+            if (currentUser && isFirebaseInitialized) {
+                syncPendingData();
+            }
+        }
+
+        function handleOffline() {
+            console.log('📴 Internet connection lost - switching to offline mode');
+            isOnline = false;
+            updateConnectionStatus();
+        }
+
+        function updateConnectionStatus() {
+            const indicator = document.getElementById('firebase-indicator');
+            const statusText = document.getElementById('firebase-status-text');
+            const offlineIndicator = document.getElementById('offline-indicator');
+            
+            if (!isOnline) {
+                indicator.style.background = '#ffc107';
+                statusText.textContent = 'Offline Mode';
+                offlineIndicator.style.display = 'block';
+                showOfflineNotification();
+            } else {
+                offlineIndicator.style.display = 'none';
+                if (isFirebaseInitialized && currentUser) {
+                    indicator.style.background = '#28a745';
+                    statusText.textContent = 'Connected to Firebase';
+                } else {
+                    indicator.style.background = '#dc3545';
+                    statusText.textContent = 'Not connected';
+                }
+            }
+        }
+
+        function showOfflineNotification() {
+            const notification = document.getElementById('sync-notification');
+            const message = document.getElementById('sync-message');
+            
+            message.textContent = '📴 Working offline - data will sync when connection is restored';
+            notification.style.display = 'block';
+            notification.style.background = 'rgba(255, 193, 7, 0.95)';
+            notification.style.color = '#856404';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+
+        // Local Storage Functions
+        function saveToLocalStorage(key, data) {
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+            } catch (error) {
+                console.error('Error saving to localStorage:', error);
+            }
+        }
+
+        function loadFromLocalStorage(key) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
+            } catch (error) {
+                console.error('Error loading from localStorage:', error);
+                return null;
+            }
+        }
+
+        function loadOfflineData() {
+            // Load all data from localStorage
+            const offlineRecords = loadFromLocalStorage('offlineRecords') || [];
+            const offlineStaffWarnings = loadFromLocalStorage('offlineStaffWarnings') || {};
+            const offlineStaffMembers = loadFromLocalStorage('offlineStaffMembers') || [];
+            const offlineUpdates = loadFromLocalStorage('offlineUpdates') || [];
+            
+            // Load pending data
+            pendingRecords = loadFromLocalStorage('pendingRecords') || [];
+            pendingUpdates = loadFromLocalStorage('pendingUpdates') || [];
+            pendingStaffWarnings = loadFromLocalStorage('pendingStaffWarnings') || [];
+            pendingStaffMembers = loadFromLocalStorage('pendingStaffMembers') || [];
+            
+            // If we're offline, use local data
+            if (!isOnline) {
+                records = offlineRecords;
+                staffWarnings = offlineStaffWarnings;
+                staffMembers = offlineStaffMembers;
+                updates = offlineUpdates;
+                
+                updateDashboard();
+                updateTimeline();
+                updateStaffWarnings();
+                updateStaffList();
+                setupStaffSelector();
+                updateRecentItems();
+                updateRecentImprovements();
+                
+                console.log('📴 Loaded offline data:', {
+                    records: records.length,
+                    staffWarnings: Object.keys(staffWarnings).length,
+                    staffMembers: staffMembers.length,
+                    updates: updates.length,
+                    pending: {
+                        records: pendingRecords.length,
+                        updates: pendingUpdates.length,
+                        staffWarnings: pendingStaffWarnings.length,
+                        staffMembers: pendingStaffMembers.length
+                    }
+                });
+            }
+        }
+
+        function saveOfflineData() {
+            // Save current data to localStorage
+            saveToLocalStorage('offlineRecords', records);
+            saveToLocalStorage('offlineStaffWarnings', staffWarnings);
+            saveToLocalStorage('offlineStaffMembers', staffMembers);
+            saveToLocalStorage('offlineUpdates', updates);
+            
+            // Save pending data
+            saveToLocalStorage('pendingRecords', pendingRecords);
+            saveToLocalStorage('pendingUpdates', pendingUpdates);
+            saveToLocalStorage('pendingStaffWarnings', pendingStaffWarnings);
+            saveToLocalStorage('pendingStaffMembers', pendingStaffMembers);
+        }
+
+        async function manualSync() {
+            if (!currentUser) {
+                alert('❌ Please sign in to sync data');
+                return;
+            }
+            
+            if (!isOnline) {
+                alert('📴 No internet connection. Please check your connection and try again.');
+                return;
+            }
+            
+            if (!isFirebaseInitialized) {
+                alert('❌ Firebase not initialized. Please refresh the page and try again.');
+                return;
+            }
+            
+            await syncPendingData();
+        }
+
+        async function syncPendingData() {
+            if (syncInProgress || !isOnline || !currentUser || !isFirebaseInitialized) {
+                return;
+            }
+            
+            syncInProgress = true;
+            console.log('🔄 Starting data sync...');
+            
+            try {
+                // Show sync notification
+                const notification = document.getElementById('sync-notification');
+                const message = document.getElementById('sync-message');
+                message.textContent = '🔄 Syncing data to cloud...';
+                notification.style.display = 'block';
+                notification.style.background = 'rgba(23, 162, 184, 0.95)';
+                notification.style.color = 'white';
+                
+                let syncedCount = 0;
+                
+                // Sync pending records
+                for (const record of pendingRecords) {
+                    try {
+                        await db.collection('users').doc(currentUser.uid).collection('safetyRecords').add(record);
+                        syncedCount++;
+                    } catch (error) {
+                        console.error('Error syncing record:', error);
+                    }
+                }
+                
+                // Sync pending updates
+                for (const update of pendingUpdates) {
+                    try {
+                        await db.collection('users').doc(currentUser.uid).collection('updates').add(update);
+                        syncedCount++;
+                    } catch (error) {
+                        console.error('Error syncing update:', error);
+                    }
+                }
+                
+                // Sync pending staff warnings
+                for (const warning of pendingStaffWarnings) {
+                    try {
+                        await db.collection('users').doc(currentUser.uid).collection('staffWarnings').doc(warning.id).set(warning.data);
+                        syncedCount++;
+                    } catch (error) {
+                        console.error('Error syncing staff warning:', error);
+                    }
+                }
+                
+                // Sync pending staff members
+                for (const staff of pendingStaffMembers) {
+                    try {
+                        await db.collection('users').doc(currentUser.uid).collection('staffMembers').doc(staff.id).set(staff.data);
+                        syncedCount++;
+                    } catch (error) {
+                        console.error('Error syncing staff member:', error);
+                    }
+                }
+                
+                // Clear pending data after successful sync
+                pendingRecords = [];
+                pendingUpdates = [];
+                pendingStaffWarnings = [];
+                pendingStaffMembers = [];
+                saveOfflineData();
+                
+                // Reload data from Firebase to get the latest
+                await loadUserData();
+                
+                // Show success notification
+                message.textContent = `✅ Synced ${syncedCount} items successfully!`;
+                notification.style.background = 'rgba(40, 167, 69, 0.95)';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+                
+                console.log(`✅ Synced ${syncedCount} items successfully`);
+                
+            } catch (error) {
+                console.error('❌ Error during sync:', error);
+                message.textContent = '❌ Sync failed - will retry when connection is stable';
+                notification.style.background = 'rgba(220, 53, 69, 0.95)';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            } finally {
+                syncInProgress = false;
+            }
+        }
+
 
 
         // Navigation
@@ -3588,25 +3923,39 @@
             const photoUpload = document.querySelector('.photo-upload');
             const photoInput = document.getElementById('photo-input');
             
+            if (!photoUpload || !photoInput) return;
+            
+            // Remove existing event listeners to prevent duplicates
+            photoUpload.removeEventListener('dragover', handlePhotoDragOver);
+            photoUpload.removeEventListener('dragleave', handlePhotoDragLeave);
+            photoUpload.removeEventListener('drop', handlePhotoDrop);
+            photoInput.removeEventListener('change', handlePhotoChange);
+            
             // Drag and drop
-            photoUpload.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                photoUpload.classList.add('dragover');
-            });
-            
-            photoUpload.addEventListener('dragleave', () => {
-                photoUpload.classList.remove('dragover');
-            });
-            
-            photoUpload.addEventListener('drop', (e) => {
-                e.preventDefault();
-                photoUpload.classList.remove('dragover');
-                handleFiles(e.dataTransfer.files);
-            });
-            
-            photoInput.addEventListener('change', (e) => {
-                handleFiles(e.target.files);
-            });
+            photoUpload.addEventListener('dragover', handlePhotoDragOver);
+            photoUpload.addEventListener('dragleave', handlePhotoDragLeave);
+            photoUpload.addEventListener('drop', handlePhotoDrop);
+            photoInput.addEventListener('change', handlePhotoChange);
+        }
+
+        // Event handler functions to allow removal
+        function handlePhotoDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handlePhotoDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handlePhotoDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        }
+
+        function handlePhotoChange(e) {
+            handleFiles(e.target.files);
         }
 
         function handleFiles(files) {
@@ -3803,7 +4152,7 @@
         });
 
         async function saveRecordToFirebase(record) {
-            if (!currentUser || !isFirebaseInitialized) {
+            if (!currentUser) {
                 alert('❌ Please sign in to save records');
                 return;
             }
@@ -3820,29 +4169,40 @@
             
             console.log(`Saving record: ${(recordSize / 1024 / 1024).toFixed(2)}MB`);
             
-            try {
-                await db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(record.id).set(record);
-                
-                // Add to local records
-                records.unshift(record);
-                
-                // Update displays
-                updateDashboard();
-                updateTimeline();
-                
-                // Show success message
-                alert('✅ Record saved successfully!');
-                
-                return true;
-            } catch (error) {
-                console.error('Error saving record:', error);
-                if (error.message.includes('payload size exceeds the limit')) {
-                    alert('❌ Record too large. Please reduce the number or size of photos and try again.');
-                } else {
-                    alert('❌ Failed to save record. Please try again.');
+            // Add to local records immediately
+            records.unshift(record);
+            
+            // Update displays
+            updateDashboard();
+            updateTimeline();
+            
+            // Save locally for offline access
+            saveOfflineData();
+            
+            // If online, save to Firebase
+            if (isOnline && isFirebaseInitialized) {
+                try {
+                    await db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(record.id).set(record);
+                    console.log('✅ Record saved to Firebase');
+                } catch (error) {
+                    console.error('Error saving to Firebase:', error);
+                    // Add to pending queue for later sync
+                    pendingRecords.push(record);
+                    saveOfflineData();
+                    console.log('📴 Added to pending sync queue');
                 }
-                throw error;
+            } else {
+                // Offline mode - add to pending queue
+                pendingRecords.push(record);
+                saveOfflineData();
+                console.log('📴 Saved locally - will sync when online');
             }
+            
+            // Show success message
+            const message = isOnline ? '✅ Record saved successfully!' : '📴 Record saved locally - will sync when online';
+            alert(message);
+            
+            return true;
         }
 
         // Dashboard updates
@@ -4305,25 +4665,37 @@
             
             if (!photoUpload || !photoInput) return;
             
+            // Remove existing event listeners to prevent duplicates
+            photoUpload.removeEventListener('dragover', handleEditPhotoDragOver);
+            photoUpload.removeEventListener('dragleave', handleEditPhotoDragLeave);
+            photoUpload.removeEventListener('drop', handleEditPhotoDrop);
+            photoInput.removeEventListener('change', handleEditPhotoChange);
+            
             // Drag and drop
-            photoUpload.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                photoUpload.classList.add('dragover');
-            });
-            
-            photoUpload.addEventListener('dragleave', () => {
-                photoUpload.classList.remove('dragover');
-            });
-            
-            photoUpload.addEventListener('drop', (e) => {
-                e.preventDefault();
-                photoUpload.classList.remove('dragover');
-                handleEditFiles(e.dataTransfer.files);
-            });
-            
-            photoInput.addEventListener('change', (e) => {
-                handleEditFiles(e.target.files);
-            });
+            photoUpload.addEventListener('dragover', handleEditPhotoDragOver);
+            photoUpload.addEventListener('dragleave', handleEditPhotoDragLeave);
+            photoUpload.addEventListener('drop', handleEditPhotoDrop);
+            photoInput.addEventListener('change', handleEditPhotoChange);
+        }
+
+        // Edit photo event handler functions to allow removal
+        function handleEditPhotoDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleEditPhotoDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleEditPhotoDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            handleEditFiles(e.dataTransfer.files);
+        }
+
+        function handleEditPhotoChange(e) {
+            handleEditFiles(e.target.files);
         }
 
         function handleEditFiles(files) {
@@ -5312,44 +5684,62 @@
 
         // Save update to Firebase
         async function saveUpdateToFirebase(update) {
-            if (!isFirebaseInitialized || !currentUser) {
-                throw new Error('Firebase not initialized or user not signed in');
+            if (!currentUser) {
+                throw new Error('User not signed in');
             }
 
-            try {
-                // Upload photos to Firebase Storage
-                const photoUrls = [];
-                for (const photo of update.photos) {
-                    const photoRef = storage.ref(`updates/${currentUser.uid}/${Date.now()}_${photo.name}`);
-                    const response = await fetch(photo.data);
-                    const blob = await response.blob();
-                    await photoRef.put(blob);
-                    const url = await photoRef.getDownloadURL();
-                    photoUrls.push(url);
+            // Prepare update data
+            const updateData = {
+                ...update,
+                userId: currentUser.uid,
+                userEmail: currentUser.email,
+                timestamp: new Date().toISOString() // Use local timestamp for offline compatibility
+            };
+
+            // Add to local array immediately
+            updates.unshift(updateData);
+            
+            // Update UI
+            updateRecentImprovements();
+            
+            // Save locally for offline access
+            saveOfflineData();
+
+            // If online, upload photos and save to Firebase
+            if (isOnline && isFirebaseInitialized) {
+                try {
+                    // Upload photos to Firebase Storage
+                    const photoUrls = [];
+                    for (const photo of update.photos) {
+                        const photoRef = storage.ref(`updates/${currentUser.uid}/${Date.now()}_${photo.name}`);
+                        const response = await fetch(photo.data);
+                        const blob = await response.blob();
+                        await photoRef.put(blob);
+                        const url = await photoRef.getDownloadURL();
+                        photoUrls.push(url);
+                    }
+
+                    // Update with photo URLs
+                    updateData.photos = photoUrls;
+                    updateData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+
+                    await db.collection('users').doc(currentUser.uid).collection('updates').add(updateData);
+                    console.log('✅ Update saved to Firebase');
+                } catch (error) {
+                    console.error('Error saving to Firebase:', error);
+                    // Add to pending queue for later sync
+                    pendingUpdates.push(updateData);
+                    saveOfflineData();
+                    console.log('📴 Added to pending sync queue');
                 }
-
-                // Save update to Firestore
-                const updateData = {
-                    ...update,
-                    photos: photoUrls,
-                    userId: currentUser.uid,
-                    userEmail: currentUser.email,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                await db.collection('users').doc(currentUser.uid).collection('updates').add(updateData);
-                
-                // Add to local array
-                updates.unshift(updateData);
-                
-                // Update UI
-                updateRecentImprovements();
-                
-                return updateData;
-            } catch (error) {
-                console.error('Error saving update:', error);
-                throw error;
+            } else {
+                // Offline mode - add to pending queue
+                pendingUpdates.push(updateData);
+                saveOfflineData();
+                console.log('📴 Saved locally - will sync when online');
             }
+            
+            return updateData;
         }
 
         // Load updates from Firebase
