@@ -1529,6 +1529,7 @@
                 </div>
                 
                 <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 20px;">
+                    <button type="button" class="btn" onclick="debugCurrentState()" style="background: linear-gradient(45deg, #6f42c1, #5a32a3);">🔍 Debug Status</button>
                     <button type="button" class="btn" onclick="exportData()">📄 Export All Data</button>
                     <button type="button" class="btn" onclick="signOut()" style="background: #dc3545;">🚪 Sign Out</button>
                 </div>
@@ -1617,9 +1618,14 @@
 
         // Authentication Functions
         function setupAuthListeners() {
-            if (!auth) return;
+            if (!auth) {
+                console.log('❌ Auth not initialized');
+                return;
+            }
             
             auth.onAuthStateChanged(function(user) {
+                console.log('🔐 Auth state changed:', user ? 'Signed in as ' + user.email : 'Signed out');
+                
                 if (user) {
                     // User is signed in
                     currentUser = user;
@@ -1810,9 +1816,12 @@
         }
 
         function loadUserData() {
-            if (!currentUser || !isFirebaseInitialized) return;
+            if (!currentUser || !isFirebaseInitialized) {
+                console.log('❌ Cannot load user data: currentUser =', !!currentUser, 'isFirebaseInitialized =', isFirebaseInitialized);
+                return;
+            }
             
-            console.log('Loading user data...');
+            console.log('✅ Loading user data for:', currentUser.email);
             
             // Load records, staff warnings, staff members, and updates in parallel
             Promise.all([
@@ -1823,8 +1832,7 @@
                     .get(),
                 db.collection('users').doc(currentUser.uid).collection('staffMembers')
                     .get(),
-                db.collection('updates')
-                    .where('userId', '==', currentUser.uid)
+                db.collection('users').doc(currentUser.uid).collection('updates')
                     .orderBy('timestamp', 'desc')
                     .get()
             ]).then(([recordsSnapshot, warningsSnapshot, staffSnapshot, updatesSnapshot]) => {
@@ -1870,7 +1878,8 @@
                 updateRecentItems(); // Initialize recent items for quick entry
                 updateRecentImprovements(); // Initialize recent improvements
             }).catch((error) => {
-                console.error('Error loading user data:', error);
+                console.error('❌ Error loading user data:', error);
+                alert('❌ Failed to load your data. Please check your internet connection and try refreshing the page.');
             });
         }
 
@@ -2087,6 +2096,36 @@
                     </div>
                 `).join('');
             });
+        }
+
+        // Debug function to check current state
+        function debugCurrentState() {
+            console.log('🔍 DEBUG: Current App State');
+            console.log('Firebase initialized:', isFirebaseInitialized);
+            console.log('Current user:', currentUser ? currentUser.email : 'None');
+            console.log('Records count:', records.length);
+            console.log('Staff warnings count:', Object.keys(staffWarnings).length);
+            console.log('Staff members count:', staffMembers.length);
+            console.log('Updates count:', updates ? updates.length : 'Not loaded');
+            
+            // Check Firebase connection
+            if (db) {
+                console.log('Firestore available:', !!db);
+            } else {
+                console.log('❌ Firestore not available');
+            }
+            
+            // Show alert with summary
+            const summary = `
+🔍 DEBUG SUMMARY:
+• Firebase: ${isFirebaseInitialized ? '✅ Connected' : '❌ Not connected'}
+• User: ${currentUser ? '✅ ' + currentUser.email : '❌ Not signed in'}
+• Records: ${records.length}
+• Staff Warnings: ${Object.keys(staffWarnings).length}
+• Staff Members: ${staffMembers.length}
+• Updates: ${updates ? updates.length : 'Not loaded'}
+            `;
+            alert(summary);
         }
 
         // Reset staff warnings function
@@ -5298,7 +5337,7 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
-                await db.collection('updates').add(updateData);
+                await db.collection('users').doc(currentUser.uid).collection('updates').add(updateData);
                 
                 // Add to local array
                 updates.unshift(updateData);
@@ -5318,8 +5357,7 @@
             if (!isFirebaseInitialized || !currentUser) return;
 
             try {
-                const snapshot = await db.collection('updates')
-                    .where('userId', '==', currentUser.uid)
+                const snapshot = await db.collection('users').doc(currentUser.uid).collection('updates')
                     .orderBy('timestamp', 'desc')
                     .get();
 
