@@ -879,9 +879,6 @@
                 <div id="offline-indicator" style="display: none; margin-left: 10px; padding: 4px 8px; background: #ffc107; color: #856404; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">
                     📴 OFFLINE
                 </div>
-                <button id="manual-sync-btn" onclick="manualSync()" style="display: none; margin-left: 10px; padding: 4px 8px; background: #17a2b8; color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" title="Sync pending data">
-                    🔄 SYNC
-                </button>
             </div>
         </div>
 
@@ -965,7 +962,53 @@
         <div id="add-record" class="section">
             <h2 style="margin-bottom: 25px; color: #2c3e50;">➕ Quick Record Entry</h2>
             
-
+            <!-- Quick Action Buttons -->
+            <div style="background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);">
+                <h3 style="margin-bottom: 20px; color: #2c3e50; font-size: 1.2rem;">🚀 Quick Actions</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <button type="button" class="quick-action-btn" onclick="quickRecord('food-safety', 'high')" style="background: linear-gradient(45deg, #ff6b6b, #ee5a52);">
+                        <span style="font-size: 2rem;">🍽️</span>
+                        <div>
+                            <strong>Food Safety</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">High Priority</div>
+                        </div>
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="quickRecord('cleaning', 'medium')" style="background: linear-gradient(45deg, #45b749, #3d8b40);">
+                        <span style="font-size: 2rem;">🧽</span>
+                        <div>
+                            <strong>Cleaning Issue</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">Medium Priority</div>
+                        </div>
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="quickRecord('equipment', 'medium')" style="background: linear-gradient(45deg, #9b59b6, #8e44ad);">
+                        <span style="font-size: 2rem;">🔧</span>
+                        <div>
+                            <strong>Equipment</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">Medium Priority</div>
+                        </div>
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="quickRecord('training', 'low')" style="background: linear-gradient(45deg, #f7931e, #e67e22);">
+                        <span style="font-size: 2rem;">📚</span>
+                        <div>
+                            <strong>Training</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">Low Priority</div>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- Smart Templates -->
+                <div style="margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50; font-size: 1rem;">📋 Common Templates</h4>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" class="template-btn" onclick="loadTemplate('temperature')">🌡️ Temperature Violation</button>
+                        <button type="button" class="template-btn" onclick="loadTemplate('cross-contamination')">⚠️ Cross Contamination</button>
+                        <button type="button" class="template-btn" onclick="loadTemplate('personal-hygiene')">🧼 Personal Hygiene</button>
+                        <button type="button" class="template-btn" onclick="loadTemplate('equipment-maintenance')">🔧 Equipment Maintenance</button>
+                        <button type="button" class="template-btn" onclick="loadTemplate('cleaning-schedule')">📅 Cleaning Schedule</button>
+                        <button type="button" class="template-btn" onclick="loadTemplate('training-reminder')">📚 Training Reminder</button>
+                    </div>
+                </div>
+            </div>
             
             <!-- Smart Defaults Info -->
             <div style="background: rgba(102, 126, 234, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 25px; border-left: 4px solid #667eea;">
@@ -1307,7 +1350,53 @@
                 </div>
             </div>
             
-
+            <!-- Quick Action Buttons -->
+            <div style="background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);">
+                <h3 style="margin-bottom: 20px; color: #2c3e50; font-size: 1.2rem;">🚀 Quick Actions</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <button type="button" class="quick-action-btn" onclick="quickUpdate('new-sign', 'high')" style="background: linear-gradient(45deg, #28a745, #20c997);">
+                        <span style="font-size: 2rem;">📋</span>
+                        <div>
+                            <strong>New Sign Added</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">High Impact</div>
+                        </div>
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="quickUpdate('procedure-update', 'medium')" style="background: linear-gradient(45deg, #17a2b8, #138496);">
+                        <span style="font-size: 2rem;">📝</span>
+                        <div>
+                            <strong>Procedure Updated</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">Medium Impact</div>
+                        </div>
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="quickUpdate('equipment-improvement', 'medium')" style="background: linear-gradient(45deg, #6f42c1, #5a32a3);">
+                        <span style="font-size: 2rem;">🔧</span>
+                        <div>
+                            <strong>Equipment Improvement</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">Medium Impact</div>
+                        </div>
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="quickUpdate('training-completed', 'low')" style="background: linear-gradient(45deg, #fd7e14, #e55a00);">
+                        <span style="font-size: 2rem;">🎓</span>
+                        <div>
+                            <strong>Training Completed</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">Low Impact</div>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- Common Templates -->
+                <div style="margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50; font-size: 1rem;">📋 Common Templates</h4>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" class="template-btn" onclick="loadUpdateTemplate('new-signage')">📋 New Signage Added</button>
+                        <button type="button" class="template-btn" onclick="loadUpdateTemplate('procedure-update')">📝 Procedure Updated</button>
+                        <button type="button" class="template-btn" onclick="loadUpdateTemplate('equipment-upgrade')">🔧 Equipment Upgrade</button>
+                        <button type="button" class="template-btn" onclick="loadUpdateTemplate('training-completed')">🎓 Training Completed</button>
+                        <button type="button" class="template-btn" onclick="loadUpdateTemplate('cleaning-improvement')">🧽 Cleaning Improvement</button>
+                        <button type="button" class="template-btn" onclick="loadUpdateTemplate('general-improvement')">✨ General Improvement</button>
+                    </div>
+                </div>
+            </div>
             
             <form id="update-form">
                 <!-- Compact Form Layout -->
@@ -1511,8 +1600,6 @@
         let pendingStaffWarnings = []; // Staff warnings waiting to be synced
         let pendingStaffMembers = []; // Staff members waiting to be synced
         let syncInProgress = false;
-        let lastSyncAttempt = 0; // Track last sync attempt to prevent spam
-        let syncRetryCount = 0; // Track sync retry attempts
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -3541,45 +3628,18 @@
             window.addEventListener('online', handleOnline);
             window.addEventListener('offline', handleOffline);
             
-            // Also check connection status periodically
-            setInterval(checkConnectionStatus, 30000); // Check every 30 seconds
-            
             // Initial status check
             updateConnectionStatus();
-        }
-
-        function checkConnectionStatus() {
-            // Test actual connectivity, not just navigator.onLine
-            fetch('https://www.google.com/favicon.ico', { 
-                method: 'HEAD',
-                mode: 'no-cors',
-                cache: 'no-cache'
-            })
-            .then(() => {
-                if (!isOnline) {
-                    console.log('🌐 Connection test successful - switching to online mode');
-                    handleOnline();
-                }
-            })
-            .catch(() => {
-                if (isOnline) {
-                    console.log('📴 Connection test failed - switching to offline mode');
-                    handleOffline();
-                }
-            });
         }
 
         function handleOnline() {
             console.log('🌐 Internet connection restored');
             isOnline = true;
-            syncRetryCount = 0; // Reset retry count on successful connection
             updateConnectionStatus();
             
-            // Attempt to sync pending data with delay to ensure connection is stable
+            // Attempt to sync pending data
             if (currentUser && isFirebaseInitialized) {
-                setTimeout(() => {
-                    syncPendingData();
-                }, 2000); // Wait 2 seconds for connection to stabilize
+                syncPendingData();
             }
         }
 
@@ -3593,26 +3653,14 @@
             const indicator = document.getElementById('firebase-indicator');
             const statusText = document.getElementById('firebase-status-text');
             const offlineIndicator = document.getElementById('offline-indicator');
-            const manualSyncBtn = document.getElementById('manual-sync-btn');
             
             if (!isOnline) {
                 indicator.style.background = '#ffc107';
                 statusText.textContent = 'Offline Mode';
                 offlineIndicator.style.display = 'block';
-                manualSyncBtn.style.display = 'none';
                 showOfflineNotification();
             } else {
                 offlineIndicator.style.display = 'none';
-                
-                // Show manual sync button if there are pending items
-                const totalPending = pendingRecords.length + pendingUpdates.length + pendingStaffWarnings.length + pendingStaffMembers.length;
-                if (totalPending > 0 && isFirebaseInitialized && currentUser) {
-                    manualSyncBtn.style.display = 'block';
-                    manualSyncBtn.textContent = `🔄 SYNC (${totalPending})`;
-                } else {
-                    manualSyncBtn.style.display = 'none';
-                }
-                
                 if (isFirebaseInitialized && currentUser) {
                     indicator.style.background = '#28a745';
                     statusText.textContent = 'Connected to Firebase';
@@ -3643,16 +3691,6 @@
                 localStorage.setItem(key, JSON.stringify(data));
             } catch (error) {
                 console.error('Error saving to localStorage:', error);
-                // If localStorage is full, try to clear old data
-                if (error.name === 'QuotaExceededError') {
-                    console.log('🔄 localStorage full, clearing old data...');
-                    clearOldLocalStorageData();
-                    try {
-                        localStorage.setItem(key, JSON.stringify(data));
-                    } catch (retryError) {
-                        console.error('Failed to save after clearing:', retryError);
-                    }
-                }
             }
         }
 
@@ -3663,34 +3701,6 @@
             } catch (error) {
                 console.error('Error loading from localStorage:', error);
                 return null;
-            }
-        }
-
-        function clearOldLocalStorageData() {
-            try {
-                // Keep only the most recent data, clear older entries
-                const keys = Object.keys(localStorage);
-                const dataKeys = keys.filter(key => key.startsWith('offline') || key.startsWith('pending'));
-                
-                // Sort by last modified time if available
-                dataKeys.sort((a, b) => {
-                    const aTime = localStorage.getItem(a + '_timestamp') || 0;
-                    const bTime = localStorage.getItem(b + '_timestamp') || 0;
-                    return bTime - aTime;
-                });
-                
-                // Keep only the most recent 50% of data
-                const toRemove = dataKeys.slice(Math.floor(dataKeys.length / 2));
-                toRemove.forEach(key => {
-                    localStorage.removeItem(key);
-                    localStorage.removeItem(key + '_timestamp');
-                });
-                
-                console.log(`🧹 Cleared ${toRemove.length} old localStorage entries`);
-            } catch (error) {
-                console.error('Error clearing old localStorage data:', error);
-                // Last resort: clear all data
-                localStorage.clear();
             }
         }
 
@@ -3707,14 +3717,13 @@
             pendingStaffWarnings = loadFromLocalStorage('pendingStaffWarnings') || [];
             pendingStaffMembers = loadFromLocalStorage('pendingStaffMembers') || [];
             
-            // Always load local data first, then merge with online data if available
-            records = [...offlineRecords];
-            staffWarnings = { ...offlineStaffWarnings };
-            staffMembers = [...offlineStaffMembers];
-            updates = [...offlineUpdates];
-            
-            // If we're offline, use only local data
+            // If we're offline, use local data
             if (!isOnline) {
+                records = offlineRecords;
+                staffWarnings = offlineStaffWarnings;
+                staffMembers = offlineStaffMembers;
+                updates = offlineUpdates;
+                
                 updateDashboard();
                 updateTimeline();
                 updateStaffWarnings();
@@ -3750,16 +3759,6 @@
             saveToLocalStorage('pendingUpdates', pendingUpdates);
             saveToLocalStorage('pendingStaffWarnings', pendingStaffWarnings);
             saveToLocalStorage('pendingStaffMembers', pendingStaffMembers);
-            
-            // Add timestamps for data management
-            const timestamp = Date.now();
-            saveToLocalStorage('offlineRecords_timestamp', timestamp);
-            saveToLocalStorage('offlineStaffWarnings_timestamp', timestamp);
-            saveToLocalStorage('offlineStaffMembers_timestamp', timestamp);
-            saveToLocalStorage('offlineUpdates_timestamp', timestamp);
-            
-            // Update connection status to show sync button if needed
-            updateConnectionStatus();
         }
 
         async function manualSync() {
@@ -3778,41 +3777,16 @@
                 return;
             }
             
-            const totalPending = pendingRecords.length + pendingUpdates.length + pendingStaffWarnings.length + pendingStaffMembers.length;
-            if (totalPending === 0) {
-                alert('✅ No pending data to sync');
-                return;
-            }
-            
-            if (confirm(`🔄 Sync ${totalPending} pending items to the cloud?`)) {
-                await syncPendingData();
-            }
+            await syncPendingData();
         }
 
         async function syncPendingData() {
-            const now = Date.now();
-            
-            // Prevent spam sync attempts
             if (syncInProgress || !isOnline || !currentUser || !isFirebaseInitialized) {
                 return;
             }
             
-            // Prevent too frequent sync attempts
-            if (now - lastSyncAttempt < 5000) { // 5 second cooldown
-                console.log('⏳ Sync attempt too soon, skipping...');
-                return;
-            }
-            
-            // Limit retry attempts
-            if (syncRetryCount > 3) {
-                console.log('❌ Too many sync retry attempts, stopping...');
-                return;
-            }
-            
             syncInProgress = true;
-            lastSyncAttempt = now;
-            syncRetryCount++;
-            console.log(`🔄 Starting data sync (attempt ${syncRetryCount})...`);
+            console.log('🔄 Starting data sync...');
             
             try {
                 // Show sync notification
@@ -3872,9 +3846,6 @@
                 pendingStaffMembers = [];
                 saveOfflineData();
                 
-                // Reset retry count on success
-                syncRetryCount = 0;
-                
                 // Reload data from Firebase to get the latest
                 await loadUserData();
                 
@@ -3890,18 +3861,8 @@
                 
             } catch (error) {
                 console.error('❌ Error during sync:', error);
-                message.textContent = `❌ Sync failed (attempt ${syncRetryCount}/3) - will retry when connection is stable`;
+                message.textContent = '❌ Sync failed - will retry when connection is stable';
                 notification.style.background = 'rgba(220, 53, 69, 0.95)';
-                
-                // Retry sync after delay if we haven't exceeded retry limit
-                if (syncRetryCount < 3) {
-                    setTimeout(() => {
-                        if (isOnline && !syncInProgress) {
-                            console.log('🔄 Retrying sync after error...');
-                            syncPendingData();
-                        }
-                    }, 10000); // Wait 10 seconds before retry
-                }
                 
                 setTimeout(() => {
                     notification.style.display = 'none';
@@ -4458,15 +4419,12 @@
                             // Note: Staff warnings are NOT decremented when records are deleted
                             // This maintains accountability and pattern tracking
                             
-                                            // Update displays
-                updateDashboard();
-                updateTimeline();
-                
-                // Update connection status to show sync button if needed
-                updateConnectionStatus();
-                
-                // Show success message
-                alert('Record deleted successfully!');
+                            // Update displays
+                            updateDashboard();
+                            updateTimeline();
+                            
+                            // Show success message
+                            alert('Record deleted successfully!');
                         })
                         .catch((error) => {
                             console.error('Error deleting from Firebase:', error);
@@ -4957,9 +4915,6 @@
                 updateDashboard();
                 updateTimeline();
                 updateStaffWarnings();
-                
-                // Update connection status to show sync button if needed
-                updateConnectionStatus();
                 
                 // Reset edit form
                 resetEditForm();
@@ -5918,306 +5873,6 @@
             }
         `;
         document.head.appendChild(style);
-
-        // Keyboard shortcuts for faster logging
-        document.addEventListener('keydown', function(e) {
-            // Only activate shortcuts when not typing in input fields
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-                return;
-            }
-            
-            // Ctrl/Cmd + N: Quick add record
-            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-                e.preventDefault();
-                showQuickAddModal();
-            }
-            
-            // Ctrl/Cmd + Shift + N: Full add record
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'N') {
-                e.preventDefault();
-                showSection('add-record');
-            }
-            
-            // Ctrl/Cmd + D: Save as draft
-            if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-                e.preventDefault();
-                saveAsDraft();
-            }
-            
-            // Ctrl/Cmd + L: Load draft
-            if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
-                e.preventDefault();
-                loadDraft();
-            }
-            
-            // Ctrl/Cmd + 1-5: Quick category selection (when in add record form)
-            if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '5') {
-                const categorySelect = document.getElementById('category');
-                if (categorySelect && document.getElementById('add-record').classList.contains('active')) {
-                    e.preventDefault();
-                    const categories = ['', 'food-safety', 'health-safety', 'cleaning', 'training', 'equipment'];
-                    const index = parseInt(e.key);
-                    if (categories[index]) {
-                        categorySelect.value = categories[index];
-                        updateSmartDefaults();
-                        showQuickMessage(`📋 Category set: ${getCategoryName(categories[index])}`);
-                    }
-                }
-            }
-            
-            // Ctrl/Cmd + H/M/L: Quick priority selection
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'h' || e.key === 'm' || e.key === 'l')) {
-                const prioritySelect = document.getElementById('priority');
-                if (prioritySelect && document.getElementById('add-record').classList.contains('active')) {
-                    e.preventDefault();
-                    const priority = e.key === 'h' ? 'high' : e.key === 'm' ? 'medium' : 'low';
-                    prioritySelect.value = priority;
-                    updateSmartDefaults();
-                    showQuickMessage(`🎯 Priority set: ${priority.toUpperCase()}`);
-                }
-            }
-        });
-
-        // Enhanced quick entry with auto-completion
-        function setupQuickEntryEnhancements() {
-            // Auto-focus description field when quick modal opens
-            const quickDescription = document.getElementById('quick-description');
-            if (quickDescription) {
-                quickDescription.addEventListener('focus', function() {
-                    // Auto-populate with common phrases based on time of day
-                    const hour = new Date().getHours();
-                    let timeBasedSuggestion = '';
-                    
-                    if (hour >= 6 && hour < 12) {
-                        timeBasedSuggestion = 'Morning inspection: ';
-                    } else if (hour >= 12 && hour < 17) {
-                        timeBasedSuggestion = 'Afternoon check: ';
-                    } else if (hour >= 17 && hour < 22) {
-                        timeBasedSuggestion = 'Evening review: ';
-                    } else {
-                        timeBasedSuggestion = 'Night shift: ';
-                    }
-                    
-                    if (!this.value) {
-                        this.value = timeBasedSuggestion;
-                        this.setSelectionRange(timeBasedSuggestion.length, timeBasedSuggestion.length);
-                    }
-                });
-            }
-            
-            // Enhanced smart defaults with location detection
-            setupLocationDetection();
-        }
-
-        // Location detection based on common patterns
-        function setupLocationDetection() {
-            const locationInput = document.getElementById('location');
-            if (locationInput) {
-                locationInput.addEventListener('input', function() {
-                    const value = this.value.toLowerCase();
-                    
-                    // Auto-suggest based on partial input
-                    const suggestions = {
-                        'kit': 'Kitchen',
-                        'prep': 'Prep Area',
-                        'stor': 'Storage',
-                        'ref': 'Refrigeration',
-                        'free': 'Freezer',
-                        'dish': 'Dishwashing Area',
-                        'serv': 'Service Area',
-                        'dining': 'Dining Room',
-                        'bath': 'Bathroom',
-                        'equip': 'Equipment Area'
-                    };
-                    
-                    for (const [key, suggestion] of Object.entries(suggestions)) {
-                        if (value.includes(key) && value.length < suggestion.length) {
-                            this.value = suggestion;
-                            this.setSelectionRange(value.length, suggestion.length);
-                            break;
-                        }
-                    }
-                });
-            }
-        }
-
-        // Enhanced quick save with more context
-        async function enhancedQuickSave(priority, category = 'food-safety') {
-            const description = document.getElementById('quick-description').value.trim();
-            if (!description) {
-                alert('Please enter a description');
-                return;
-            }
-
-            // Auto-detect location from description
-            let detectedLocation = 'General Area';
-            const descLower = description.toLowerCase();
-            
-            if (descLower.includes('kitchen') || descLower.includes('cook')) {
-                detectedLocation = 'Kitchen';
-            } else if (descLower.includes('prep') || descLower.includes('cutting')) {
-                detectedLocation = 'Prep Area';
-            } else if (descLower.includes('storage') || descLower.includes('pantry')) {
-                detectedLocation = 'Storage';
-            } else if (descLower.includes('refrigerator') || descLower.includes('fridge') || descLower.includes('cold')) {
-                detectedLocation = 'Refrigeration';
-            } else if (descLower.includes('freezer') || descLower.includes('frozen')) {
-                detectedLocation = 'Freezer';
-            } else if (descLower.includes('dish') || descLower.includes('wash')) {
-                detectedLocation = 'Dishwashing Area';
-            } else if (descLower.includes('service') || descLower.includes('dining')) {
-                detectedLocation = 'Service Area';
-            }
-
-            const record = {
-                id: Date.now().toString(),
-                date: new Date().toISOString(),
-                category: category,
-                priority: priority,
-                staffMember: smartDefaults.staffMember || 'Staff Member',
-                location: detectedLocation,
-                description: description,
-                photos: [],
-                lastModified: new Date().toISOString()
-            };
-
-            try {
-                if (currentUser && isFirebaseInitialized) {
-                    await db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(record.id).set(record);
-                }
-                
-                records.unshift(record);
-                updateDashboard();
-                updateTimeline();
-                
-                // Update staff warnings if staff member is specified
-                if (record.staffMember && record.staffMember !== 'Staff Member') {
-                    updateStaffWarning(record.staffMember);
-                }
-                
-                // Update connection status to show sync button if needed
-                updateConnectionStatus();
-                
-                closeQuickAddModal();
-                showQuickMessage(`⚡ Quick ${priority} priority record saved!`);
-                
-            } catch (error) {
-                console.error('Error saving quick record:', error);
-                alert('Failed to save record. Please try again.');
-            }
-        }
-
-        // Override existing quickSave function
-        async function quickSave(priority) {
-            await enhancedQuickSave(priority);
-        }
-
-        // Add keyboard shortcuts info to the UI
-        function addKeyboardShortcutsInfo() {
-            const shortcutsInfo = `
-                <div style="background: rgba(102, 126, 234, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #667eea;">
-                    <h4 style="color: #667eea; margin-bottom: 10px;">⌨️ Keyboard Shortcuts</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 0.9rem;">
-                        <div><strong>Ctrl+N:</strong> Quick Add Record</div>
-                        <div><strong>Ctrl+Shift+N:</strong> Full Add Record</div>
-                        <div><strong>Ctrl+D:</strong> Save as Draft</div>
-                        <div><strong>Ctrl+L:</strong> Load Draft</div>
-                        <div><strong>Ctrl+1-5:</strong> Quick Category</div>
-                        <div><strong>Ctrl+H/M/L:</strong> Quick Priority</div>
-                    </div>
-                </div>
-            `;
-            
-            // Add to add-record section
-            const addRecordSection = document.getElementById('add-record');
-            if (addRecordSection) {
-                const existingInfo = addRecordSection.querySelector('.smart-defaults-info');
-                if (existingInfo) {
-                    existingInfo.insertAdjacentHTML('afterend', shortcutsInfo);
-                }
-            }
-        }
-
-        // Initialize enhanced features
-        document.addEventListener('DOMContentLoaded', function() {
-            // ... existing code ...
-            setupQuickEntryEnhancements();
-            addKeyboardShortcutsInfo();
-        });
-
-        // Enhanced form auto-completion
-        function setupFormAutoCompletion() {
-            const descriptionField = document.getElementById('description');
-            if (descriptionField) {
-                descriptionField.addEventListener('input', function() {
-                    const value = this.value.toLowerCase();
-                    
-                    // Auto-complete common phrases
-                    const completions = {
-                        'temp': 'temperature',
-                        'temp v': 'temperature violation',
-                        'cross': 'cross-contamination',
-                        'hyg': 'hygiene',
-                        'clean': 'cleaning',
-                        'main': 'maintenance',
-                        'train': 'training',
-                        'equip': 'equipment',
-                        'saf': 'safety',
-                        'viol': 'violation'
-                    };
-                    
-                    for (const [key, completion] of Object.entries(completions)) {
-                        if (value.endsWith(key + ' ') && !value.includes(completion)) {
-                            const before = this.value.substring(0, this.value.length - key.length - 1);
-                            this.value = before + completion + ' ';
-                            this.setSelectionRange(this.value.length, this.value.length);
-                            break;
-                        }
-                    }
-                });
-            }
-        }
-
-
-
-        // Enhanced smart defaults with more intelligence
-        function enhancedSmartDefaults() {
-            const hour = new Date().getHours();
-            const dayOfWeek = new Date().getDay();
-            
-            // Time-based defaults
-            if (hour >= 6 && hour < 12) {
-                // Morning defaults
-                if (!smartDefaults.location) smartDefaults.location = 'Kitchen';
-                if (!smartDefaults.category) smartDefaults.category = 'food-safety';
-            } else if (hour >= 12 && hour < 17) {
-                // Afternoon defaults
-                if (!smartDefaults.location) smartDefaults.location = 'Prep Area';
-                if (!smartDefaults.category) smartDefaults.category = 'cleaning';
-            } else if (hour >= 17 && hour < 22) {
-                // Evening defaults
-                if (!smartDefaults.location) smartDefaults.location = 'Service Area';
-                if (!smartDefaults.category) smartDefaults.category = 'health-safety';
-            }
-            
-            // Day-based defaults
-            if (dayOfWeek === 1) { // Monday
-                if (!smartDefaults.category) smartDefaults.category = 'training';
-            } else if (dayOfWeek === 5) { // Friday
-                if (!smartDefaults.category) smartDefaults.category = 'cleaning';
-            }
-            
-            updateSmartDefaults();
-        }
-
-        // Initialize all enhanced features
-        document.addEventListener('DOMContentLoaded', function() {
-            // ... existing code ...
-            setupQuickEntryEnhancements();
-            setupFormAutoCompletion();
-            addKeyboardShortcutsInfo();
-            enhancedSmartDefaults();
-        });
     </script>
 </body>
 </html>

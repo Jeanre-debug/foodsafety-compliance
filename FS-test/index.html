@@ -113,6 +113,22 @@
             backdrop-filter: blur(10px);
             display: none;
             z-index: 1000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .offline-mode {
+            background: rgba(255, 193, 7, 0.1) !important;
+            border: 2px solid rgba(255, 193, 7, 0.3) !important;
+        }
+
+        .offline-mode::before {
+            content: '📴 ';
+            margin-right: 5px;
         }
 
         .nav-buttons {
@@ -775,81 +791,6 @@
             100% { transform: scale(1); }
         }
 
-        /* Dark Mode Styles */
-        body.dark-mode {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #e0e0e0;
-        }
-
-        body.dark-mode .header {
-            background: rgba(26, 26, 46, 0.95);
-            color: #e0e0e0;
-        }
-
-        body.dark-mode .header-content h1 {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        body.dark-mode .section {
-            background: rgba(26, 26, 46, 0.95);
-            color: #e0e0e0;
-        }
-
-        body.dark-mode .form-group input,
-        body.dark-mode .form-group textarea,
-        body.dark-mode .form-group select {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: #444;
-            color: #e0e0e0;
-        }
-
-        body.dark-mode .form-group input:focus,
-        body.dark-mode .form-group textarea:focus,
-        body.dark-mode .form-group select:focus {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: #667eea;
-        }
-
-        body.dark-mode .timeline-item {
-            background: rgba(26, 26, 46, 0.8);
-            color: #e0e0e0;
-        }
-
-        body.dark-mode .stat-card {
-            background: linear-gradient(45deg, rgba(26, 26, 46, 0.9), rgba(26, 26, 46, 0.7));
-            color: #e0e0e0;
-        }
-
-        /* Loading Animation */
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Smooth Transitions */
-        * {
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-        }
-
-        /* Hover Effects */
-        .hover-lift {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .hover-lift:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Focus Indicators */
-        .focus-ring:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
-        }
-
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -935,6 +876,12 @@
             <div class="firebase-status">
                 <div class="status-indicator" id="firebase-indicator"></div>
                 <span id="firebase-status-text">Not connected</span>
+                <div id="offline-indicator" style="display: none; margin-left: 10px; padding: 4px 8px; background: #ffc107; color: #856404; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">
+                    📴 OFFLINE
+                </div>
+                <button id="manual-sync-btn" onclick="manualSync()" style="display: none; margin-left: 10px; padding: 4px 8px; background: #17a2b8; color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" title="Sync pending data">
+                    🔄 SYNC
+                </button>
             </div>
         </div>
 
@@ -951,10 +898,10 @@
         <div class="nav-buttons">
             <button class="nav-btn active" onclick="showSection('dashboard')">📊 Dashboard</button>
             <button class="nav-btn" onclick="showSection('add-record')">➕ Add Record</button>
+            <button class="nav-btn" onclick="showSection('updates-improvements')">✅ Updates & Improvements</button>
             <button class="nav-btn" onclick="showSection('timeline')">📋 Timeline</button>
             <button class="nav-btn" onclick="showSection('staff-warnings')">🚨 Staff Warnings</button>
             <button class="nav-btn" onclick="showSection('settings')">⚙️ Settings</button>
-            <button class="nav-btn" onclick="showQuickStats()" style="background: linear-gradient(45deg, #17a2b8, #138496);">📊 Quick Stats</button>
         </div>
 
         <!-- Dashboard Section -->
@@ -1018,53 +965,7 @@
         <div id="add-record" class="section">
             <h2 style="margin-bottom: 25px; color: #2c3e50;">➕ Quick Record Entry</h2>
             
-            <!-- Quick Action Buttons -->
-            <div style="background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);">
-                <h3 style="margin-bottom: 20px; color: #2c3e50; font-size: 1.2rem;">🚀 Quick Actions</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                    <button type="button" class="quick-action-btn" onclick="quickRecord('food-safety', 'high')" style="background: linear-gradient(45deg, #ff6b6b, #ee5a52);">
-                        <span style="font-size: 2rem;">🍽️</span>
-                        <div>
-                            <strong>Food Safety</strong>
-                            <div style="font-size: 0.8rem; opacity: 0.9;">High Priority</div>
-                        </div>
-                    </button>
-                    <button type="button" class="quick-action-btn" onclick="quickRecord('cleaning', 'medium')" style="background: linear-gradient(45deg, #45b749, #3d8b40);">
-                        <span style="font-size: 2rem;">🧽</span>
-                        <div>
-                            <strong>Cleaning Issue</strong>
-                            <div style="font-size: 0.8rem; opacity: 0.9;">Medium Priority</div>
-                        </div>
-                    </button>
-                    <button type="button" class="quick-action-btn" onclick="quickRecord('equipment', 'medium')" style="background: linear-gradient(45deg, #9b59b6, #8e44ad);">
-                        <span style="font-size: 2rem;">🔧</span>
-                        <div>
-                            <strong>Equipment</strong>
-                            <div style="font-size: 0.8rem; opacity: 0.9;">Medium Priority</div>
-                        </div>
-                    </button>
-                    <button type="button" class="quick-action-btn" onclick="quickRecord('training', 'low')" style="background: linear-gradient(45deg, #f7931e, #e67e22);">
-                        <span style="font-size: 2rem;">📚</span>
-                        <div>
-                            <strong>Training</strong>
-                            <div style="font-size: 0.8rem; opacity: 0.9;">Low Priority</div>
-                        </div>
-                    </button>
-                </div>
-                
-                <!-- Smart Templates -->
-                <div style="margin-top: 20px;">
-                    <h4 style="margin-bottom: 15px; color: #2c3e50; font-size: 1rem;">📋 Common Templates</h4>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button type="button" class="template-btn" onclick="loadTemplate('temperature')">🌡️ Temperature Violation</button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('cross-contamination')">⚠️ Cross Contamination</button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('personal-hygiene')">🧼 Personal Hygiene</button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('equipment-maintenance')">🔧 Equipment Maintenance</button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('cleaning-schedule')">📅 Cleaning Schedule</button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('training-reminder')">📚 Training Reminder</button>
-                    </div>
-                </div>
-            </div>
+
             
             <!-- Smart Defaults Info -->
             <div style="background: rgba(102, 126, 234, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 25px; border-left: 4px solid #667eea;">
@@ -1161,104 +1062,6 @@
             <button onclick="showQuickAddModal()" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 50%; width: 60px; height: 60px; cursor: pointer; font-size: 1.5rem; box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Quick Add Record">➕</button>
         </div>
 
-        <!-- Theme Toggle Button -->
-        <div id="theme-toggle" style="position: fixed; bottom: 30px; left: 30px; z-index: 1000;">
-            <button onclick="toggleTheme()" style="background: rgba(255, 255, 255, 0.9); color: #2c3e50; border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; font-size: 1.2rem; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; backdrop-filter: blur(10px);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Toggle Dark Mode">🌙</button>
-        </div>
-
-        <!-- Keyboard Shortcuts Help -->
-        <div id="shortcuts-help" style="position: fixed; top: 20px; right: 20px; z-index: 1000; display: none;">
-            <div style="background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); max-width: 300px;">
-                <h4 style="margin-bottom: 15px; color: #2c3e50;">⌨️ Keyboard Shortcuts</h4>
-                <div style="font-size: 0.9rem; line-height: 1.6;">
-                    <div style="margin-bottom: 8px;"><strong>Ctrl+N:</strong> New Record</div>
-                    <div style="margin-bottom: 8px;"><strong>Ctrl+S:</strong> Save Record</div>
-                    <div style="margin-bottom: 8px;"><strong>Ctrl+D:</strong> Save as Draft</div>
-                    <div style="margin-bottom: 8px;"><strong>Ctrl+F:</strong> Search Records</div>
-                    <div style="margin-bottom: 8px;"><strong>Ctrl+T:</strong> Toggle Theme</div>
-                    <div style="margin-bottom: 8px;"><strong>Ctrl+?</strong> Show/Hide Help</div>
-                    <div style="margin-bottom: 8px;"><strong>Esc:</strong> Close Modals</div>
-                </div>
-                <button onclick="hideShortcutsHelp()" style="background: #667eea; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; font-size: 0.8rem;">Got it!</button>
-            </div>
-        </div>
-
-        <!-- Auto-Save Indicator -->
-        <div id="auto-save-indicator" style="position: fixed; top: 20px; left: 20px; z-index: 1000; display: none;">
-            <div style="background: rgba(40, 167, 69, 0.9); color: white; padding: 10px 15px; border-radius: 10px; font-size: 0.9rem; backdrop-filter: blur(10px);">
-                💾 Auto-saved
-            </div>
-        </div>
-
-        <!-- Loading Spinner -->
-        <div id="loading-spinner" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000; display: none;">
-            <div style="background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 15px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); text-align: center;">
-                <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
-                <div style="color: #2c3e50; font-weight: 600;">Loading...</div>
-            </div>
-        </div>
-
-        <!-- Back to Top Button -->
-        <div id="back-to-top" style="position: fixed; bottom: 100px; right: 30px; z-index: 1000; display: none;">
-            <button onclick="scrollToTop()" style="background: rgba(255, 255, 255, 0.9); color: #2c3e50; border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; font-size: 1.2rem; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; backdrop-filter: blur(10px);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Back to Top">⬆️</button>
-        </div>
-
-        <!-- Progress Bar -->
-        <div id="progress-bar" style="position: fixed; top: 0; left: 0; width: 0%; height: 3px; background: linear-gradient(45deg, #667eea, #764ba2); z-index: 10001; transition: width 0.3s ease;"></div>
-
-        <!-- Undo/Redo System -->
-        <div id="undo-redo" style="position: fixed; bottom: 30px; left: 100px; z-index: 1000; display: none;">
-            <button id="undo-btn" onclick="undoAction()" style="background: rgba(255, 255, 255, 0.9); color: #2c3e50; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 1rem; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; backdrop-filter: blur(10px); margin-right: 10px;" title="Undo (Ctrl+Z)">↶</button>
-            <button id="redo-btn" onclick="redoAction()" style="background: rgba(255, 255, 255, 0.9); color: #2c3e50; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 1rem; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; backdrop-filter: blur(10px);" title="Redo (Ctrl+Y)">↷</button>
-        </div>
-
-        <!-- Quick Stats Widget -->
-        <div id="quick-stats" style="position: fixed; top: 20px; left: 20px; z-index: 1000; display: none;">
-            <div style="background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); min-width: 200px;">
-                <h4 style="margin-bottom: 10px; color: #2c3e50; font-size: 0.9rem;">📊 Quick Stats</h4>
-                <div style="font-size: 0.8rem; line-height: 1.4;">
-                    <div style="margin-bottom: 5px;">📝 Today: <span id="today-count">0</span></div>
-                    <div style="margin-bottom: 5px;">🚨 High Priority: <span id="high-priority-count">0</span></div>
-                    <div style="margin-bottom: 5px;">👥 Active Staff: <span id="active-staff-count">0</span></div>
-                </div>
-                <button onclick="hideQuickStats()" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; margin-top: 8px;">Hide</button>
-            </div>
-        </div>
-
-        <!-- Gesture Navigation -->
-        <div id="gesture-area" style="position: fixed; bottom: 0; left: 0; right: 0; height: 50px; z-index: 999; display: none;"></div>
-
-        <!-- Smart Search Suggestions -->
-        <div id="search-suggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e1e8ed; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); z-index: 1000; display: none; max-height: 200px; overflow-y: auto;"></div>
-
-        <!-- Bulk Actions Toolbar -->
-        <div id="bulk-actions" style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.95); padding: 15px; border-top: 1px solid #e1e8ed; z-index: 1000; display: none; backdrop-filter: blur(10px);">
-            <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
-                <div style="color: #2c3e50; font-weight: 600;">
-                    <span id="selected-count">0</span> records selected
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="bulkExport()" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">📄 Export Selected</button>
-                    <button onclick="bulkDelete()" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">🗑️ Delete Selected</button>
-                    <button onclick="cancelBulkActions()" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">Cancel</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Smart Tips System -->
-        <div id="smart-tips" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: none;">
-            <div style="background: rgba(255, 255, 255, 0.95); padding: 15px 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); border-left: 4px solid #667eea; max-width: 400px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 1.2rem;">💡</span>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600; color: #2c3e50; margin-bottom: 5px;">Pro Tip</div>
-                        <div style="font-size: 0.9rem; color: #666;" id="tip-content"></div>
-                    </div>
-                    <button onclick="hideSmartTip()" style="background: none; border: none; color: #666; cursor: pointer; font-size: 1.2rem;">×</button>
-                </div>
-            </div>
-        </div>
-
         <!-- Quick Add Modal -->
         <div id="quick-add-modal" class="modal" style="display: none;">
             <div class="modal-content" style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
@@ -1349,15 +1152,12 @@
             <h2 style="margin-bottom: 25px; color: #2c3e50;">📋 Compliance Timeline</h2>
             
             <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
-                <div style="position: relative; flex: 1; min-width: 300px;">
-                    <input type="text" class="search-box" id="search-input" placeholder="Search records by staff, location, category, or description..." style="width: 100%;">
-                    <div id="search-suggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e1e8ed; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); z-index: 1000; display: none; max-height: 200px; overflow-y: auto;"></div>
-                </div>
+                <input type="text" class="search-box" id="search-input" placeholder="Search records by staff, location, category, or description..." style="flex: 1; min-width: 300px;">
                 <button type="button" class="btn" onclick="exportToPDF()" style="background: linear-gradient(45deg, #28a745, #20c997); box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4); font-size: 1.1rem; padding: 18px 35px; border-radius: 15px; position: relative; overflow: hidden;">
                     <span style="position: relative; z-index: 2;">Generate Professional Report</span>
                     <div style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(45deg, #20c997, #28a745); transition: left 0.3s ease;"></div>
                 </button>
-                <button type="button" class="btn" onclick="toggleBulkSelection()" style="background: linear-gradient(45deg, #dc3545, #c82333);">Bulk Actions</button>
+                <button type="button" class="btn" onclick="toggleMassDelete()" style="background: linear-gradient(45deg, #dc3545, #c82333);">Mass Delete</button>
             </div>
             
             <div class="timeline" id="timeline-container">
@@ -1489,6 +1289,118 @@
             <div id="staff-warnings-container"></div>
         </div>
 
+        <!-- Updates & Improvements Section -->
+        <div id="updates-improvements" class="section">
+            <h2 style="margin-bottom: 25px; color: #2c3e50;">✅ Updates & Improvements</h2>
+            
+            <!-- Info Section -->
+            <div style="background: rgba(40, 167, 69, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 25px; border-left: 4px solid #28a745;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 2rem;">💡</span>
+                    <div>
+                        <h3 style="color: #2c3e50; margin-bottom: 10px;">Document Your Positive Changes</h3>
+                        <p style="color: #666; line-height: 1.5;">
+                            Track improvements, new signs, updated procedures, and positive changes you make to your food safety system. 
+                            This helps demonstrate continuous improvement and proactive management.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+
+            
+            <form id="update-form">
+                <!-- Compact Form Layout -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label for="update-category">Improvement Type</label>
+                        <select id="update-category" required onchange="updateSmartDefaults()">
+                            <option value="">Select Type</option>
+                            <option value="new-sign">📋 New Sign/Label Added</option>
+                            <option value="procedure-update">📝 Procedure Updated</option>
+                            <option value="equipment-improvement">🔧 Equipment Improvement</option>
+                            <option value="training-completed">🎓 Training Completed</option>
+                            <option value="cleaning-improvement">🧽 Cleaning Improvement</option>
+                            <option value="general-improvement">✨ General Improvement</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="update-impact">Impact Level</label>
+                        <select id="update-impact" required onchange="updateSmartDefaults()">
+                            <option value="">Select Impact</option>
+                            <option value="low">🟢 Low - Minor improvement</option>
+                            <option value="medium">🟡 Medium - Notable improvement</option>
+                            <option value="high">🔴 High - Significant improvement</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label for="update-staff">Staff Member(s) Involved</label>
+                        <div class="staff-selector-container">
+                            <div class="staff-input-wrapper">
+                                <input type="text" id="update-staff-input" placeholder="Type staff name or use recent..." autocomplete="off">
+                                <div id="update-staff-dropdown" class="staff-dropdown" style="display: none;"></div>
+                            </div>
+                            <div id="update-selected-staff-tags" class="selected-staff-tags"></div>
+                            <input type="hidden" id="update-staff" required>
+                        </div>
+                        <!-- Recent Staff Quick Select -->
+                        <div id="update-recent-staff" style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="update-location">Location</label>
+                        <input type="text" id="update-location" placeholder="Type location or use recent..." required>
+                        <!-- Recent Locations Quick Select -->
+                        <div id="update-recent-locations" style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="update-description">Description & Details</label>
+                    <div style="position: relative;">
+                        <textarea id="update-description" placeholder="Describe the improvement, what was changed, and the benefits... (Click 🎤 for voice input)" required style="padding-right: 50px;"></textarea>
+                        <button type="button" id="update-voice-input-btn" onclick="toggleUpdateVoiceInput()" style="position: absolute; right: 10px; top: 10px; background: #28a745; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s ease;" title="Voice Input">🎤</button>
+                    </div>
+                    <!-- Voice Input Status -->
+                    <div id="update-voice-status" style="display: none; margin-top: 10px; padding: 10px; background: rgba(40, 167, 69, 0.1); border-radius: 8px; color: #28a745; font-size: 0.9rem;">
+                        <span id="update-voice-status-text">Click 🎤 to start voice input</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Photos (Optional)</label>
+                    <div class="photo-upload" onclick="document.getElementById('update-photo-input').click()">
+                        <p>📸 Click to upload photos or drag & drop</p>
+                        <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">Supports: JPG, PNG, WebP, DNG (Raw)</p>
+                        <p style="font-size: 0.9rem; color: #666;">Perfect for documenting new signs, equipment, or improvements</p>
+                    </div>
+                    <input type="file" id="update-photo-input" multiple accept="image/*" style="display: none;" onchange="handleUpdatePhotoUpload(event)">
+                    <div id="update-photo-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 15px;"></div>
+                </div>
+
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 30px;">
+                    <button type="submit" class="btn" style="background: linear-gradient(45deg, #28a745, #20c997); padding: 15px 30px; font-size: 1.1rem;">
+                        ✅ Save Improvement
+                    </button>
+                    <button type="button" class="btn" onclick="clearUpdateForm()" style="background: linear-gradient(45deg, #6c757d, #495057);">
+                        🗑️ Clear Form
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Recent Improvements -->
+            <div style="margin-top: 40px;">
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">📈 Recent Improvements</h3>
+                <div id="recent-improvements" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                    <!-- Recent improvements will be populated here -->
+                </div>
+            </div>
+        </div>
+
         <!-- Settings Section -->
         <div id="settings" class="section">
             <h2 style="margin-bottom: 25px; color: #2c3e50;">⚙️ Settings</h2>
@@ -1547,6 +1459,8 @@
                 </div>
                 
                 <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 20px;">
+                    <button type="button" class="btn" onclick="debugCurrentState()" style="background: linear-gradient(45deg, #6f42c1, #5a32a3);">🔍 Debug Status</button>
+                    <button type="button" class="btn" onclick="manualSync()" style="background: linear-gradient(45deg, #17a2b8, #138496);">🔄 Manual Sync</button>
                     <button type="button" class="btn" onclick="exportData()">📄 Export All Data</button>
                     <button type="button" class="btn" onclick="signOut()" style="background: #dc3545;">🚪 Sign Out</button>
                 </div>
@@ -1588,6 +1502,17 @@
         let selectedStaffMembers = []; // Track selected staff for current record
         let editSelectedStaffMembers = []; // Track selected staff for edit form
         let editingRecordId = null; // Track which record is being edited
+        
+        // Offline mode variables
+        let isOnline = navigator.onLine;
+        let offlineQueue = []; // Queue for operations when offline
+        let pendingRecords = []; // Records waiting to be synced
+        let pendingUpdates = []; // Updates waiting to be synced
+        let pendingStaffWarnings = []; // Staff warnings waiting to be synced
+        let pendingStaffMembers = []; // Staff members waiting to be synced
+        let syncInProgress = false;
+        let lastSyncAttempt = 0; // Track last sync attempt to prevent spam
+        let syncRetryCount = 0; // Track sync retry attempts
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1609,6 +1534,12 @@
             
             // Setup form handlers
             setupAuthForms();
+            
+            // Setup offline/online detection
+            setupOfflineDetection();
+            
+            // Load offline data
+            loadOfflineData();
         });
 
 
@@ -1635,9 +1566,14 @@
 
         // Authentication Functions
         function setupAuthListeners() {
-            if (!auth) return;
+            if (!auth) {
+                console.log('❌ Auth not initialized');
+                return;
+            }
             
             auth.onAuthStateChanged(function(user) {
+                console.log('🔐 Auth state changed:', user ? 'Signed in as ' + user.email : 'Signed out');
+                
                 if (user) {
                     // User is signed in
                     currentUser = user;
@@ -1787,7 +1723,6 @@
             updateStaffWarnings();
             setupPhotoUpload();
             setupSearch();
-            initializeQoLFeatures(); // Initialize quality of life features
         }
 
         function updateUserInfo(user) {
@@ -1829,11 +1764,14 @@
         }
 
         function loadUserData() {
-            if (!currentUser || !isFirebaseInitialized) return;
+            if (!currentUser || !isFirebaseInitialized) {
+                console.log('❌ Cannot load user data: currentUser =', !!currentUser, 'isFirebaseInitialized =', isFirebaseInitialized);
+                return;
+            }
             
-            console.log('Loading user data...');
+            console.log('✅ Loading user data for:', currentUser.email);
             
-            // Load records, staff warnings, and staff members in parallel
+            // Load records, staff warnings, staff members, and updates in parallel
             Promise.all([
                 db.collection('users').doc(currentUser.uid).collection('safetyRecords')
                     .orderBy('date', 'desc')
@@ -1841,8 +1779,11 @@
                 db.collection('users').doc(currentUser.uid).collection('staffWarnings')
                     .get(),
                 db.collection('users').doc(currentUser.uid).collection('staffMembers')
+                    .get(),
+                db.collection('users').doc(currentUser.uid).collection('updates')
+                    .orderBy('timestamp', 'desc')
                     .get()
-            ]).then(([recordsSnapshot, warningsSnapshot, staffSnapshot]) => {
+            ]).then(([recordsSnapshot, warningsSnapshot, staffSnapshot, updatesSnapshot]) => {
                 // Load records
                 records = [];
                 recordsSnapshot.forEach((doc) => {
@@ -1867,15 +1808,30 @@
                     });
                 });
                 
-                console.log(`Loaded ${records.length} records, ${Object.keys(staffWarnings).length} staff warnings, and ${staffMembers.length} staff members for user`);
+                // Load updates
+                updates = [];
+                updatesSnapshot.forEach((doc) => {
+                    updates.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                console.log(`Loaded ${records.length} records, ${Object.keys(staffWarnings).length} staff warnings, ${staffMembers.length} staff members, and ${updates.length} updates for user`);
+                
+                // Save data locally for offline access
+                saveOfflineData();
+                
                 updateDashboard();
                 updateTimeline();
                 updateStaffWarnings();
                 updateStaffList();
                 setupStaffSelector();
                 updateRecentItems(); // Initialize recent items for quick entry
+                updateRecentImprovements(); // Initialize recent improvements
             }).catch((error) => {
-                console.error('Error loading user data:', error);
+                console.error('❌ Error loading user data:', error);
+                alert('❌ Failed to load your data. Please check your internet connection and try refreshing the page.');
             });
         }
 
@@ -1957,18 +1913,38 @@
         }
 
         async function saveStaffWarningToFirebase(staffKey) {
-            if (!currentUser || !isFirebaseInitialized) return;
+            if (!currentUser) return;
             
-            try {
-                const staffData = staffWarnings[staffKey];
-                if (staffData) {
-                    await db.collection('users').doc(currentUser.uid).collection('staffWarnings').doc(staffKey).set(staffData);
-                } else {
-                    // Remove from Firebase if count is 0
-                    await db.collection('users').doc(currentUser.uid).collection('staffWarnings').doc(staffKey).delete();
+            const staffData = staffWarnings[staffKey];
+            
+            // Save locally for offline access
+            saveOfflineData();
+            
+            // If online, save to Firebase
+            if (isOnline && isFirebaseInitialized) {
+                try {
+                    if (staffData) {
+                        await db.collection('users').doc(currentUser.uid).collection('staffWarnings').doc(staffKey).set(staffData);
+                    } else {
+                        // Remove from Firebase if count is 0
+                        await db.collection('users').doc(currentUser.uid).collection('staffWarnings').doc(staffKey).delete();
+                    }
+                } catch (error) {
+                    console.error('Error saving staff warning to Firebase:', error);
+                    // Add to pending queue for later sync
+                    pendingStaffWarnings.push({
+                        id: staffKey,
+                        data: staffData
+                    });
+                    saveOfflineData();
                 }
-            } catch (error) {
-                console.error('Error saving staff warning to Firebase:', error);
+            } else {
+                // Offline mode - add to pending queue
+                pendingStaffWarnings.push({
+                    id: staffKey,
+                    data: staffData
+                });
+                saveOfflineData();
             }
         }
 
@@ -2092,6 +2068,42 @@
                     </div>
                 `).join('');
             });
+        }
+
+        // Debug function to check current state
+        function debugCurrentState() {
+            console.log('🔍 DEBUG: Current App State');
+            console.log('Firebase initialized:', isFirebaseInitialized);
+            console.log('Current user:', currentUser ? currentUser.email : 'None');
+            console.log('Records count:', records.length);
+            console.log('Staff warnings count:', Object.keys(staffWarnings).length);
+            console.log('Staff members count:', staffMembers.length);
+            console.log('Updates count:', updates ? updates.length : 'Not loaded');
+            
+            // Check Firebase connection
+            if (db) {
+                console.log('Firestore available:', !!db);
+            } else {
+                console.log('❌ Firestore not available');
+            }
+            
+            // Show alert with summary
+            const summary = `
+🔍 DEBUG SUMMARY:
+• Connection: ${isOnline ? '✅ Online' : '📴 Offline'}
+• Firebase: ${isFirebaseInitialized ? '✅ Connected' : '❌ Not connected'}
+• User: ${currentUser ? '✅ ' + currentUser.email : '❌ Not signed in'}
+• Records: ${records.length}
+• Staff Warnings: ${Object.keys(staffWarnings).length}
+• Staff Members: ${staffMembers.length}
+• Updates: ${updates ? updates.length : 'Not loaded'}
+• Pending Sync:
+  - Records: ${pendingRecords.length}
+  - Updates: ${pendingUpdates.length}
+  - Staff Warnings: ${pendingStaffWarnings.length}
+  - Staff Members: ${pendingStaffMembers.length}
+            `;
+            alert(summary);
         }
 
         // Reset staff warnings function
@@ -2384,25 +2396,45 @@
                 userId: currentUser.uid
             };
             
-            // Save to Firebase
-            db.collection('users').doc(currentUser.uid).collection('staffMembers').doc(staffMember.id).set(staffMember)
-                .then(() => {
-                    // Add to local array
-                    staffMembers.push(staffMember);
-                    
-                    // Update UI
-                    updateStaffList();
-                    setupStaffSelector();
-                    
-                    // Clear input
-                    input.value = '';
-                    
-                    alert(`✅ Added ${name} to staff list`);
-                })
-                .catch((error) => {
-                    console.error('Error adding staff member:', error);
-                    alert('❌ Failed to add staff member. Please try again.');
+            // Add to local array immediately
+            staffMembers.push(staffMember);
+            
+            // Update UI
+            updateStaffList();
+            setupStaffSelector();
+            
+            // Save locally for offline access
+            saveOfflineData();
+            
+            // Clear input
+            input.value = '';
+            
+            // If online, save to Firebase
+            if (isOnline && isFirebaseInitialized) {
+                db.collection('users').doc(currentUser.uid).collection('staffMembers').doc(staffMember.id).set(staffMember)
+                    .then(() => {
+                        console.log('✅ Staff member saved to Firebase');
+                        alert(`✅ Added ${name} to staff list`);
+                    })
+                    .catch((error) => {
+                        console.error('Error saving to Firebase:', error);
+                        // Add to pending queue for later sync
+                        pendingStaffMembers.push({
+                            id: staffMember.id,
+                            data: staffMember
+                        });
+                        saveOfflineData();
+                        alert(`📴 Added ${name} locally - will sync when online`);
+                    });
+            } else {
+                // Offline mode - add to pending queue
+                pendingStaffMembers.push({
+                    id: staffMember.id,
+                    data: staffMember
                 });
+                saveOfflineData();
+                alert(`📴 Added ${name} locally - will sync when online`);
+            }
         }
 
         function removeStaffMember(staffId) {
@@ -2740,24 +2772,87 @@
             }
         }
 
-        // Bulk Selection Functions
-        function toggleBulkSelection() {
-            const checkboxes = document.querySelectorAll('.timeline-item input[type="checkbox"]');
-            const bulkBtn = document.querySelector('button[onclick="toggleBulkSelection()"]');
+        // Mass Delete Functions
+        function toggleMassDelete() {
+            const checkboxes = document.querySelectorAll('.mass-delete-checkbox');
+            const massDeleteBtn = document.querySelector('button[onclick="toggleMassDelete()"]');
             
             if (checkboxes[0].style.display === 'none') {
-                // Enable bulk selection mode
+                // Enable mass delete mode
                 checkboxes.forEach(cb => cb.style.display = 'block');
-                bulkBtn.textContent = '✅ Bulk Mode Active';
-                bulkBtn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
-                showQuickMessage('✅ Bulk selection mode enabled. Select records to manage.');
+                massDeleteBtn.textContent = '✅ Confirm Delete';
+                massDeleteBtn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                updateMassDeleteButton();
             } else {
-                // Disable bulk selection mode
+                // Execute mass delete
+                const selectedRecords = getSelectedRecords();
+                if (selectedRecords.length === 0) {
+                    alert('❌ Please select at least one record to delete.');
+                    return;
+                }
+                
+                const confirmMessage = `Are you sure you want to delete ${selectedRecords.length} record(s)?\n\nThis action cannot be undone.`;
+                if (confirm(confirmMessage)) {
+                    massDeleteRecords(selectedRecords);
+                }
+            }
+        }
+
+        function getSelectedRecords() {
+            const checkboxes = document.querySelectorAll('.mass-delete-checkbox input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.id.replace('select-', ''));
+        }
+
+        function updateMassDeleteButton() {
+            const selectedCount = getSelectedRecords().length;
+            const massDeleteBtn = document.querySelector('button[onclick="toggleMassDelete()"]');
+            
+            if (selectedCount > 0) {
+                massDeleteBtn.textContent = `✅ Delete ${selectedCount} Record(s)`;
+            } else {
+                massDeleteBtn.textContent = '✅ Confirm Delete';
+            }
+        }
+
+        async function massDeleteRecords(recordIds) {
+            if (!currentUser || !isFirebaseInitialized) {
+                alert('❌ Please sign in to delete records');
+                return;
+            }
+
+            const batch = db.batch();
+            
+            for (const recordId of recordIds) {
+                const docRef = db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(recordId);
+                batch.delete(docRef);
+            }
+
+            try {
+                await batch.commit();
+                
+                // Remove from local records
+                const deletedRecords = records.filter(r => recordIds.includes(r.id));
+                records = records.filter(r => !recordIds.includes(r.id));
+                
+                // Note: Staff warnings are NOT decremented when records are deleted
+                // This maintains accountability and pattern tracking
+                
+                // Update displays
+                updateDashboard();
+                updateTimeline();
+                
+                // Reset mass delete mode
+                const checkboxes = document.querySelectorAll('.mass-delete-checkbox');
                 checkboxes.forEach(cb => cb.style.display = 'none');
-                bulkBtn.textContent = 'Bulk Actions';
-                bulkBtn.style.background = 'linear-gradient(45deg, #dc3545, #c82333)';
-                cancelBulkActions();
-                showQuickMessage('❌ Bulk selection mode disabled.');
+                const massDeleteBtn = document.querySelector('button[onclick="toggleMassDelete()"]');
+                massDeleteBtn.textContent = '🗑️ Mass Delete';
+                massDeleteBtn.style.background = 'linear-gradient(45deg, #dc3545, #c82333)';
+                
+                alert(`✅ Successfully deleted ${recordIds.length} record(s)!`);
+                
+            } catch (error) {
+                console.error('Error deleting records:', error);
+                alert('❌ Failed to delete some records. Please try again.');
             }
         }
 
@@ -2865,10 +2960,16 @@
                 const thisMonthRecords = records.filter(r => new Date(r.date) >= thisMonth);
                 const highPriorityRecords = records.filter(r => r.priority === 'high');
                 const recordsWithPhotos = records.filter(r => r.photos.length > 0);
+                const thisMonthUpdates = updates.filter(u => new Date(u.date) >= thisMonth);
+                const highImpactUpdates = updates.filter(u => u.impact === 'high');
                 
                 doc.text(`This Month: ${thisMonthRecords.length}`, 120, 58);
                 doc.text(`High Priority: ${highPriorityRecords.length}`, 120, 63);
                 doc.text(`With Photos: ${recordsWithPhotos.length}`, 120, 68);
+                
+                // Add updates statistics on a new line
+                doc.text(`Updates: ${updates.length}`, 20, 73);
+                doc.text(`This Month Updates: ${thisMonthUpdates.length}`, 120, 73);
                 
                 let yPosition = 90; // Start a bit lower to ensure proper spacing
                 let pageNumber = 1;
@@ -3251,6 +3352,133 @@
                     yPosition = tableY + 10;
                 }
                 
+                // Add Updates & Improvements Section
+                if (updates && updates.length > 0) {
+                    // Check if we need a new page for updates section
+                    if (yPosition > 200) {
+                        doc.addPage();
+                        pageNumber++;
+                        yPosition = 40;
+                        
+                        // Add page header
+                        doc.setFillColor(102, 126, 234);
+                        doc.rect(0, 0, 210, 25, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(16);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
+                        doc.setFontSize(10);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
+                    }
+                    
+                    // Updates section header
+                    doc.setFillColor(40, 167, 69);
+                    doc.rect(15, yPosition - 5, 180, 15, 'F');
+                    doc.setDrawColor(40, 167, 69);
+                    doc.setLineWidth(0.5);
+                    doc.rect(15, yPosition - 5, 180, 15, 'S');
+                    
+                    doc.setTextColor(40, 167, 69);
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Updates & Improvements', 20, yPosition + 3);
+                    yPosition += 25;
+                    
+                    // Sort updates by date (newest first)
+                    const sortedUpdates = [...updates].sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
+                    // Updates table
+                    let updateTableY = yPosition;
+                    const updateTableX = 20;
+                    const updateColWidths = [50, 40, 50, 60]; // Type, Impact, Staff, Date
+                    
+                    // Table header
+                    doc.setFillColor(248, 249, 250);
+                    doc.rect(updateTableX, updateTableY - 3, 160, 10, 'F');
+                    doc.setDrawColor(40, 167, 69);
+                    doc.setLineWidth(0.3);
+                    doc.rect(updateTableX, updateTableY - 3, 160, 10, 'S');
+                    
+                    doc.setTextColor(44, 62, 80);
+                    doc.setFontSize(9);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Type', updateTableX + 2, updateTableY + 2);
+                    doc.text('Impact', updateTableX + 55, updateTableY + 2);
+                    doc.text('Staff', updateTableX + 100, updateTableY + 2);
+                    doc.text('Date', updateTableX + 145, updateTableY + 2);
+                    updateTableY += 12;
+                    
+                    // Table rows
+                    sortedUpdates.forEach((update, index) => {
+                        // Check if we need a new page
+                        if (updateTableY > 250) {
+                            doc.addPage();
+                            pageNumber++;
+                            updateTableY = 40;
+                            
+                            // Add page header
+                            doc.setFillColor(102, 126, 234);
+                            doc.rect(0, 0, 210, 25, 'F');
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFontSize(16);
+                            doc.setFont(undefined, 'bold');
+                            doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
+                            doc.setFontSize(10);
+                            doc.setFont(undefined, 'normal');
+                            doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
+                        }
+                        
+                        // Row background (alternating colors)
+                        const rowColor = index % 2 === 0 ? [255, 255, 255] : [248, 249, 250];
+                        doc.setFillColor(rowColor[0], rowColor[1], rowColor[2]);
+                        doc.rect(updateTableX, updateTableY - 2, 160, 8, 'F');
+                        doc.setDrawColor(225, 232, 237);
+                        doc.setLineWidth(0.2);
+                        doc.rect(updateTableX, updateTableY - 2, 160, 8, 'S');
+                        
+                        // Update type
+                        doc.setTextColor(44, 62, 80);
+                        doc.setFontSize(8);
+                        doc.setFont(undefined, 'normal');
+                        const displayType = getUpdateCategoryName(update.category).length > 12 ? 
+                            getUpdateCategoryName(update.category).substring(0, 12) + '...' : 
+                            getUpdateCategoryName(update.category);
+                        doc.text(displayType, updateTableX + 2, updateTableY + 2);
+                        
+                        // Impact level with color
+                        const impactColors = {
+                            'low': [40, 167, 69],
+                            'medium': [255, 193, 7],
+                            'high': [220, 53, 69]
+                        };
+                        const impactColor = impactColors[update.impact] || [108, 117, 125];
+                        doc.setTextColor(impactColor[0], impactColor[1], impactColor[2]);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(update.impact.toUpperCase(), updateTableX + 55, updateTableY + 2);
+                        
+                        // Staff member
+                        doc.setTextColor(44, 62, 80);
+                        doc.setFont(undefined, 'normal');
+                        const displayStaff = update.staffMember && update.staffMember.length > 10 ? 
+                            update.staffMember.substring(0, 10) + '...' : 
+                            (update.staffMember || 'N/A');
+                        doc.text(displayStaff, updateTableX + 100, updateTableY + 2);
+                        
+                        // Date
+                        const updateDate = new Date(update.date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                        });
+                        doc.text(updateDate, updateTableX + 145, updateTableY + 2);
+                        
+                        updateTableY += 10;
+                    });
+                    
+                    yPosition = updateTableY + 10;
+                }
+                
                 // Add professional footer - more compact
                 const totalPages = doc.getNumberOfPages();
                 for (let page = 1; page <= totalPages; page++) {
@@ -3307,6 +3535,382 @@
             statusText.textContent = message;
         }
 
+        // Offline Mode Functions
+        function setupOfflineDetection() {
+            // Listen for online/offline events
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+            
+            // Also check connection status periodically
+            setInterval(checkConnectionStatus, 30000); // Check every 30 seconds
+            
+            // Initial status check
+            updateConnectionStatus();
+        }
+
+        function checkConnectionStatus() {
+            // Test actual connectivity, not just navigator.onLine
+            fetch('https://www.google.com/favicon.ico', { 
+                method: 'HEAD',
+                mode: 'no-cors',
+                cache: 'no-cache'
+            })
+            .then(() => {
+                if (!isOnline) {
+                    console.log('🌐 Connection test successful - switching to online mode');
+                    handleOnline();
+                }
+            })
+            .catch(() => {
+                if (isOnline) {
+                    console.log('📴 Connection test failed - switching to offline mode');
+                    handleOffline();
+                }
+            });
+        }
+
+        function handleOnline() {
+            console.log('🌐 Internet connection restored');
+            isOnline = true;
+            syncRetryCount = 0; // Reset retry count on successful connection
+            updateConnectionStatus();
+            
+            // Attempt to sync pending data with delay to ensure connection is stable
+            if (currentUser && isFirebaseInitialized) {
+                setTimeout(() => {
+                    syncPendingData();
+                }, 2000); // Wait 2 seconds for connection to stabilize
+            }
+        }
+
+        function handleOffline() {
+            console.log('📴 Internet connection lost - switching to offline mode');
+            isOnline = false;
+            updateConnectionStatus();
+        }
+
+        function updateConnectionStatus() {
+            const indicator = document.getElementById('firebase-indicator');
+            const statusText = document.getElementById('firebase-status-text');
+            const offlineIndicator = document.getElementById('offline-indicator');
+            const manualSyncBtn = document.getElementById('manual-sync-btn');
+            
+            if (!isOnline) {
+                indicator.style.background = '#ffc107';
+                statusText.textContent = 'Offline Mode';
+                offlineIndicator.style.display = 'block';
+                manualSyncBtn.style.display = 'none';
+                showOfflineNotification();
+            } else {
+                offlineIndicator.style.display = 'none';
+                
+                // Show manual sync button if there are pending items
+                const totalPending = pendingRecords.length + pendingUpdates.length + pendingStaffWarnings.length + pendingStaffMembers.length;
+                if (totalPending > 0 && isFirebaseInitialized && currentUser) {
+                    manualSyncBtn.style.display = 'block';
+                    manualSyncBtn.textContent = `🔄 SYNC (${totalPending})`;
+                } else {
+                    manualSyncBtn.style.display = 'none';
+                }
+                
+                if (isFirebaseInitialized && currentUser) {
+                    indicator.style.background = '#28a745';
+                    statusText.textContent = 'Connected to Firebase';
+                } else {
+                    indicator.style.background = '#dc3545';
+                    statusText.textContent = 'Not connected';
+                }
+            }
+        }
+
+        function showOfflineNotification() {
+            const notification = document.getElementById('sync-notification');
+            const message = document.getElementById('sync-message');
+            
+            message.textContent = '📴 Working offline - data will sync when connection is restored';
+            notification.style.display = 'block';
+            notification.style.background = 'rgba(255, 193, 7, 0.95)';
+            notification.style.color = '#856404';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+
+        // Local Storage Functions
+        function saveToLocalStorage(key, data) {
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+            } catch (error) {
+                console.error('Error saving to localStorage:', error);
+                // If localStorage is full, try to clear old data
+                if (error.name === 'QuotaExceededError') {
+                    console.log('🔄 localStorage full, clearing old data...');
+                    clearOldLocalStorageData();
+                    try {
+                        localStorage.setItem(key, JSON.stringify(data));
+                    } catch (retryError) {
+                        console.error('Failed to save after clearing:', retryError);
+                    }
+                }
+            }
+        }
+
+        function loadFromLocalStorage(key) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
+            } catch (error) {
+                console.error('Error loading from localStorage:', error);
+                return null;
+            }
+        }
+
+        function clearOldLocalStorageData() {
+            try {
+                // Keep only the most recent data, clear older entries
+                const keys = Object.keys(localStorage);
+                const dataKeys = keys.filter(key => key.startsWith('offline') || key.startsWith('pending'));
+                
+                // Sort by last modified time if available
+                dataKeys.sort((a, b) => {
+                    const aTime = localStorage.getItem(a + '_timestamp') || 0;
+                    const bTime = localStorage.getItem(b + '_timestamp') || 0;
+                    return bTime - aTime;
+                });
+                
+                // Keep only the most recent 50% of data
+                const toRemove = dataKeys.slice(Math.floor(dataKeys.length / 2));
+                toRemove.forEach(key => {
+                    localStorage.removeItem(key);
+                    localStorage.removeItem(key + '_timestamp');
+                });
+                
+                console.log(`🧹 Cleared ${toRemove.length} old localStorage entries`);
+            } catch (error) {
+                console.error('Error clearing old localStorage data:', error);
+                // Last resort: clear all data
+                localStorage.clear();
+            }
+        }
+
+        function loadOfflineData() {
+            // Load all data from localStorage
+            const offlineRecords = loadFromLocalStorage('offlineRecords') || [];
+            const offlineStaffWarnings = loadFromLocalStorage('offlineStaffWarnings') || {};
+            const offlineStaffMembers = loadFromLocalStorage('offlineStaffMembers') || [];
+            const offlineUpdates = loadFromLocalStorage('offlineUpdates') || [];
+            
+            // Load pending data
+            pendingRecords = loadFromLocalStorage('pendingRecords') || [];
+            pendingUpdates = loadFromLocalStorage('pendingUpdates') || [];
+            pendingStaffWarnings = loadFromLocalStorage('pendingStaffWarnings') || [];
+            pendingStaffMembers = loadFromLocalStorage('pendingStaffMembers') || [];
+            
+            // Always load local data first, then merge with online data if available
+            records = [...offlineRecords];
+            staffWarnings = { ...offlineStaffWarnings };
+            staffMembers = [...offlineStaffMembers];
+            updates = [...offlineUpdates];
+            
+            // If we're offline, use only local data
+            if (!isOnline) {
+                updateDashboard();
+                updateTimeline();
+                updateStaffWarnings();
+                updateStaffList();
+                setupStaffSelector();
+                updateRecentItems();
+                updateRecentImprovements();
+                
+                console.log('📴 Loaded offline data:', {
+                    records: records.length,
+                    staffWarnings: Object.keys(staffWarnings).length,
+                    staffMembers: staffMembers.length,
+                    updates: updates.length,
+                    pending: {
+                        records: pendingRecords.length,
+                        updates: pendingUpdates.length,
+                        staffWarnings: pendingStaffWarnings.length,
+                        staffMembers: pendingStaffMembers.length
+                    }
+                });
+            }
+        }
+
+        function saveOfflineData() {
+            // Save current data to localStorage
+            saveToLocalStorage('offlineRecords', records);
+            saveToLocalStorage('offlineStaffWarnings', staffWarnings);
+            saveToLocalStorage('offlineStaffMembers', staffMembers);
+            saveToLocalStorage('offlineUpdates', updates);
+            
+            // Save pending data
+            saveToLocalStorage('pendingRecords', pendingRecords);
+            saveToLocalStorage('pendingUpdates', pendingUpdates);
+            saveToLocalStorage('pendingStaffWarnings', pendingStaffWarnings);
+            saveToLocalStorage('pendingStaffMembers', pendingStaffMembers);
+            
+            // Add timestamps for data management
+            const timestamp = Date.now();
+            saveToLocalStorage('offlineRecords_timestamp', timestamp);
+            saveToLocalStorage('offlineStaffWarnings_timestamp', timestamp);
+            saveToLocalStorage('offlineStaffMembers_timestamp', timestamp);
+            saveToLocalStorage('offlineUpdates_timestamp', timestamp);
+            
+            // Update connection status to show sync button if needed
+            updateConnectionStatus();
+        }
+
+        async function manualSync() {
+            if (!currentUser) {
+                alert('❌ Please sign in to sync data');
+                return;
+            }
+            
+            if (!isOnline) {
+                alert('📴 No internet connection. Please check your connection and try again.');
+                return;
+            }
+            
+            if (!isFirebaseInitialized) {
+                alert('❌ Firebase not initialized. Please refresh the page and try again.');
+                return;
+            }
+            
+            const totalPending = pendingRecords.length + pendingUpdates.length + pendingStaffWarnings.length + pendingStaffMembers.length;
+            if (totalPending === 0) {
+                alert('✅ No pending data to sync');
+                return;
+            }
+            
+            if (confirm(`🔄 Sync ${totalPending} pending items to the cloud?`)) {
+                await syncPendingData();
+            }
+        }
+
+        async function syncPendingData() {
+            const now = Date.now();
+            
+            // Prevent spam sync attempts
+            if (syncInProgress || !isOnline || !currentUser || !isFirebaseInitialized) {
+                return;
+            }
+            
+            // Prevent too frequent sync attempts
+            if (now - lastSyncAttempt < 5000) { // 5 second cooldown
+                console.log('⏳ Sync attempt too soon, skipping...');
+                return;
+            }
+            
+            // Limit retry attempts
+            if (syncRetryCount > 3) {
+                console.log('❌ Too many sync retry attempts, stopping...');
+                return;
+            }
+            
+            syncInProgress = true;
+            lastSyncAttempt = now;
+            syncRetryCount++;
+            console.log(`🔄 Starting data sync (attempt ${syncRetryCount})...`);
+            
+            try {
+                // Show sync notification
+                const notification = document.getElementById('sync-notification');
+                const message = document.getElementById('sync-message');
+                message.textContent = '🔄 Syncing data to cloud...';
+                notification.style.display = 'block';
+                notification.style.background = 'rgba(23, 162, 184, 0.95)';
+                notification.style.color = 'white';
+                
+                let syncedCount = 0;
+                
+                // Sync pending records
+                for (const record of pendingRecords) {
+                    try {
+                        await db.collection('users').doc(currentUser.uid).collection('safetyRecords').add(record);
+                        syncedCount++;
+                    } catch (error) {
+                        console.error('Error syncing record:', error);
+                    }
+                }
+                
+                // Sync pending updates
+                for (const update of pendingUpdates) {
+                    try {
+                        await db.collection('users').doc(currentUser.uid).collection('updates').add(update);
+                        syncedCount++;
+                    } catch (error) {
+                        console.error('Error syncing update:', error);
+                    }
+                }
+                
+                // Sync pending staff warnings
+                for (const warning of pendingStaffWarnings) {
+                    try {
+                        await db.collection('users').doc(currentUser.uid).collection('staffWarnings').doc(warning.id).set(warning.data);
+                        syncedCount++;
+                    } catch (error) {
+                        console.error('Error syncing staff warning:', error);
+                    }
+                }
+                
+                // Sync pending staff members
+                for (const staff of pendingStaffMembers) {
+                    try {
+                        await db.collection('users').doc(currentUser.uid).collection('staffMembers').doc(staff.id).set(staff.data);
+                        syncedCount++;
+                    } catch (error) {
+                        console.error('Error syncing staff member:', error);
+                    }
+                }
+                
+                // Clear pending data after successful sync
+                pendingRecords = [];
+                pendingUpdates = [];
+                pendingStaffWarnings = [];
+                pendingStaffMembers = [];
+                saveOfflineData();
+                
+                // Reset retry count on success
+                syncRetryCount = 0;
+                
+                // Reload data from Firebase to get the latest
+                await loadUserData();
+                
+                // Show success notification
+                message.textContent = `✅ Synced ${syncedCount} items successfully!`;
+                notification.style.background = 'rgba(40, 167, 69, 0.95)';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+                
+                console.log(`✅ Synced ${syncedCount} items successfully`);
+                
+            } catch (error) {
+                console.error('❌ Error during sync:', error);
+                message.textContent = `❌ Sync failed (attempt ${syncRetryCount}/3) - will retry when connection is stable`;
+                notification.style.background = 'rgba(220, 53, 69, 0.95)';
+                
+                // Retry sync after delay if we haven't exceeded retry limit
+                if (syncRetryCount < 3) {
+                    setTimeout(() => {
+                        if (isOnline && !syncInProgress) {
+                            console.log('🔄 Retrying sync after error...');
+                            syncPendingData();
+                        }
+                    }, 10000); // Wait 10 seconds before retry
+                }
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            } finally {
+                syncInProgress = false;
+            }
+        }
+
 
 
         // Navigation
@@ -3329,6 +3933,7 @@
                 const btnText = btn.textContent;
                 if ((sectionId === 'dashboard' && btnText.includes('Dashboard')) ||
                     (sectionId === 'add-record' && btnText.includes('Add Record')) ||
+                    (sectionId === 'updates-improvements' && btnText.includes('Updates & Improvements')) ||
                     (sectionId === 'timeline' && btnText.includes('Timeline')) ||
                     (sectionId === 'staff-warnings' && btnText.includes('Staff Warnings')) ||
                     (sectionId === 'settings' && btnText.includes('Settings'))) {
@@ -3357,25 +3962,39 @@
             const photoUpload = document.querySelector('.photo-upload');
             const photoInput = document.getElementById('photo-input');
             
+            if (!photoUpload || !photoInput) return;
+            
+            // Remove existing event listeners to prevent duplicates
+            photoUpload.removeEventListener('dragover', handlePhotoDragOver);
+            photoUpload.removeEventListener('dragleave', handlePhotoDragLeave);
+            photoUpload.removeEventListener('drop', handlePhotoDrop);
+            photoInput.removeEventListener('change', handlePhotoChange);
+            
             // Drag and drop
-            photoUpload.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                photoUpload.classList.add('dragover');
-            });
-            
-            photoUpload.addEventListener('dragleave', () => {
-                photoUpload.classList.remove('dragover');
-            });
-            
-            photoUpload.addEventListener('drop', (e) => {
-                e.preventDefault();
-                photoUpload.classList.remove('dragover');
-                handleFiles(e.dataTransfer.files);
-            });
-            
-            photoInput.addEventListener('change', (e) => {
-                handleFiles(e.target.files);
-            });
+            photoUpload.addEventListener('dragover', handlePhotoDragOver);
+            photoUpload.addEventListener('dragleave', handlePhotoDragLeave);
+            photoUpload.addEventListener('drop', handlePhotoDrop);
+            photoInput.addEventListener('change', handlePhotoChange);
+        }
+
+        // Event handler functions to allow removal
+        function handlePhotoDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handlePhotoDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handlePhotoDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        }
+
+        function handlePhotoChange(e) {
+            handleFiles(e.target.files);
         }
 
         function handleFiles(files) {
@@ -3572,7 +4191,7 @@
         });
 
         async function saveRecordToFirebase(record) {
-            if (!currentUser || !isFirebaseInitialized) {
+            if (!currentUser) {
                 alert('❌ Please sign in to save records');
                 return;
             }
@@ -3589,29 +4208,40 @@
             
             console.log(`Saving record: ${(recordSize / 1024 / 1024).toFixed(2)}MB`);
             
-            try {
-                await db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(record.id).set(record);
-                
-                // Add to local records
-                records.unshift(record);
-                
-                // Update displays
-                updateDashboard();
-                updateTimeline();
-                
-                // Show success message
-                showSuccess('Record saved successfully!');
-                
-                return true;
-            } catch (error) {
-                console.error('Error saving record:', error);
-                if (error.message.includes('payload size exceeds the limit')) {
-                    alert('❌ Record too large. Please reduce the number or size of photos and try again.');
-                } else {
-                    showError('Failed to save record. Please try again.');
+            // Add to local records immediately
+            records.unshift(record);
+            
+            // Update displays
+            updateDashboard();
+            updateTimeline();
+            
+            // Save locally for offline access
+            saveOfflineData();
+            
+            // If online, save to Firebase
+            if (isOnline && isFirebaseInitialized) {
+                try {
+                    await db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(record.id).set(record);
+                    console.log('✅ Record saved to Firebase');
+                } catch (error) {
+                    console.error('Error saving to Firebase:', error);
+                    // Add to pending queue for later sync
+                    pendingRecords.push(record);
+                    saveOfflineData();
+                    console.log('📴 Added to pending sync queue');
                 }
-                throw error;
+            } else {
+                // Offline mode - add to pending queue
+                pendingRecords.push(record);
+                saveOfflineData();
+                console.log('📴 Saved locally - will sync when online');
             }
+            
+            // Show success message
+            const message = isOnline ? '✅ Record saved successfully!' : '📴 Record saved locally - will sync when online';
+            alert(message);
+            
+            return true;
         }
 
         // Dashboard updates
@@ -3678,8 +4308,6 @@
             
             container.innerHTML = records.map(record => `
                 <div class="timeline-item" data-record-id="${record.id}">
-                    <!-- Bulk Selection Checkbox -->
-                    <input type="checkbox" id="select-${record.id}" style="position: absolute; top: 10px; right: 10px; transform: scale(1.2); z-index: 10; display: none;" onchange="updateBulkActions()">
                     <div style="display: flex; align-items: flex-start; gap: 15px;">
                         <div style="flex: 1;">
                             <div class="timeline-date">${formatDate(record.date)}</div>
@@ -3714,6 +4342,9 @@
                                     }).join('')}
                                 </div>
                             ` : ''}
+                        </div>
+                        <div class="mass-delete-checkbox" style="display: none;">
+                            <input type="checkbox" id="select-${record.id}" onchange="updateMassDeleteButton()" style="transform: scale(1.5);">
                         </div>
                     </div>
                 </div>
@@ -3827,12 +4458,15 @@
                             // Note: Staff warnings are NOT decremented when records are deleted
                             // This maintains accountability and pattern tracking
                             
-                            // Update displays
-                            updateDashboard();
-                            updateTimeline();
-                            
-                            // Show success message
-                            alert('Record deleted successfully!');
+                                            // Update displays
+                updateDashboard();
+                updateTimeline();
+                
+                // Update connection status to show sync button if needed
+                updateConnectionStatus();
+                
+                // Show success message
+                alert('Record deleted successfully!');
                         })
                         .catch((error) => {
                             console.error('Error deleting from Firebase:', error);
@@ -4073,25 +4707,37 @@
             
             if (!photoUpload || !photoInput) return;
             
+            // Remove existing event listeners to prevent duplicates
+            photoUpload.removeEventListener('dragover', handleEditPhotoDragOver);
+            photoUpload.removeEventListener('dragleave', handleEditPhotoDragLeave);
+            photoUpload.removeEventListener('drop', handleEditPhotoDrop);
+            photoInput.removeEventListener('change', handleEditPhotoChange);
+            
             // Drag and drop
-            photoUpload.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                photoUpload.classList.add('dragover');
-            });
-            
-            photoUpload.addEventListener('dragleave', () => {
-                photoUpload.classList.remove('dragover');
-            });
-            
-            photoUpload.addEventListener('drop', (e) => {
-                e.preventDefault();
-                photoUpload.classList.remove('dragover');
-                handleEditFiles(e.dataTransfer.files);
-            });
-            
-            photoInput.addEventListener('change', (e) => {
-                handleEditFiles(e.target.files);
-            });
+            photoUpload.addEventListener('dragover', handleEditPhotoDragOver);
+            photoUpload.addEventListener('dragleave', handleEditPhotoDragLeave);
+            photoUpload.addEventListener('drop', handleEditPhotoDrop);
+            photoInput.addEventListener('change', handleEditPhotoChange);
+        }
+
+        // Edit photo event handler functions to allow removal
+        function handleEditPhotoDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleEditPhotoDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleEditPhotoDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            handleEditFiles(e.dataTransfer.files);
+        }
+
+        function handleEditPhotoChange(e) {
+            handleEditFiles(e.target.files);
         }
 
         function handleEditFiles(files) {
@@ -4312,6 +4958,9 @@
                 updateTimeline();
                 updateStaffWarnings();
                 
+                // Update connection status to show sync button if needed
+                updateConnectionStatus();
+                
                 // Reset edit form
                 resetEditForm();
                 
@@ -4366,7 +5015,7 @@
             
             // Auto-fill common descriptions based on category
             const descriptions = {
-                'food-safety': 'Food safety violation observed. Immediate action required to prevent contamination.',
+                'food-safety': 'Allergenic products were found in direct contact with non-allergenic items. This poses a cross-contact risk and may result in the unintended presence of allergens in products not intended to contain them, which is a serious food safety concern.',
                 'cleaning': 'Cleaning standards not met. Area requires attention and proper sanitization.',
                 'equipment': 'Equipment issue identified. Maintenance or repair needed.',
                 'training': 'Training opportunity identified. Staff member needs additional guidance.'
@@ -4446,11 +5095,11 @@
             
             // Auto-suggest location based on category
             const locationSuggestions = {
-                'food-safety': ['Kitchen', 'Prep Area', 'Storage', 'Refrigeration Unit'],
-                'cleaning': ['Kitchen', 'Dining Area', 'Storage', 'Equipment Area'],
-                'equipment': ['Kitchen', 'Equipment Area', 'Maintenance Room'],
-                'training': ['Kitchen', 'Training Room', 'Office'],
-                'health-safety': ['Kitchen', 'Dining Area', 'Staff Area']
+                'food-safety': ['Bakery', 'Prep Area', 'Storage', 'Refrigeration Unit'],
+                'cleaning': ['Bakery', 'Dining Area', 'Storage', 'Equipment Area'],
+                'equipment': ['Bakery', 'Equipment Area', 'Maintenance Room'],
+                'training': ['Bakery', 'Training Room', 'Office'],
+                'health-safety': ['Bakery', 'Dining Area', 'Staff Area']
             };
             
             if (locationSuggestions[category] && !document.getElementById('location').value) {
@@ -4714,6 +5363,548 @@
             }, 3000);
         }
 
+        // ===== UPDATES & IMPROVEMENTS FUNCTIONS =====
+
+        // Data storage for updates
+        let updates = [];
+        let updatePhotos = [];
+        let updateSelectedStaffMembers = [];
+
+        // Quick action buttons for updates
+        function quickUpdate(category, impact) {
+            document.getElementById('update-category').value = category;
+            document.getElementById('update-impact').value = impact;
+            
+            // Auto-fill common descriptions based on category
+            const descriptions = {
+                'new-sign': 'New sign or label added to improve safety and compliance.',
+                'procedure-update': 'Procedure updated to enhance efficiency and safety standards.',
+                'equipment-improvement': 'Equipment improvement completed to enhance functionality.',
+                'training-completed': 'Training session completed successfully. Staff member now certified.'
+            };
+            
+            if (descriptions[category]) {
+                document.getElementById('update-description').value = descriptions[category];
+            }
+            
+            // Apply smart defaults
+            updateUpdateSmartDefaults();
+            
+            // Focus on staff input
+            document.getElementById('update-staff-input').focus();
+            
+            // Show success message
+            showQuickMessage(`✅ Quick update setup complete! Type: ${getUpdateCategoryName(category)}, Impact: ${impact}`);
+        }
+
+        // Template system for updates
+        function loadUpdateTemplate(templateType) {
+            const templates = {
+                'new-signage': {
+                    category: 'new-sign',
+                    impact: 'high',
+                    description: 'New safety signage added to improve compliance and staff awareness. Sign clearly displays important safety information.',
+                    location: 'Kitchen'
+                },
+                'procedure-update': {
+                    category: 'procedure-update',
+                    impact: 'medium',
+                    description: 'Procedure updated to reflect current best practices and improve efficiency. Staff has been informed of changes.',
+                    location: 'Kitchen'
+                },
+                'equipment-upgrade': {
+                    category: 'equipment-improvement',
+                    impact: 'medium',
+                    description: 'Equipment upgrade completed. New features improve safety and efficiency of operations.',
+                    location: 'Equipment Area'
+                },
+                'training-completed': {
+                    category: 'training-completed',
+                    impact: 'low',
+                    description: 'Training session completed successfully. Staff member has demonstrated competency in required procedures.',
+                    location: 'Training Area'
+                },
+                'cleaning-improvement': {
+                    category: 'cleaning-improvement',
+                    impact: 'medium',
+                    description: 'Cleaning improvement implemented. New procedures or equipment enhance sanitation standards.',
+                    location: 'Kitchen'
+                },
+                'general-improvement': {
+                    category: 'general-improvement',
+                    impact: 'medium',
+                    description: 'General improvement implemented to enhance overall food safety and operational efficiency.',
+                    location: 'General Area'
+                }
+            };
+            
+            const template = templates[templateType];
+            if (template) {
+                document.getElementById('update-category').value = template.category;
+                document.getElementById('update-impact').value = template.impact;
+                document.getElementById('update-description').value = template.description;
+                document.getElementById('update-location').value = template.location;
+                
+                updateUpdateSmartDefaults();
+                showQuickMessage(`📋 Update template loaded: ${templateType.replace('-', ' ')}`);
+            }
+        }
+
+        // Smart defaults for updates
+        function updateUpdateSmartDefaults() {
+            const category = document.getElementById('update-category').value;
+            const impact = document.getElementById('update-impact').value;
+            
+            // Auto-suggest location based on category
+            const locationSuggestions = {
+                'new-sign': ['Kitchen', 'Prep Area', 'Storage', 'Dining Area'],
+                'procedure-update': ['Kitchen', 'Office', 'Training Room'],
+                'equipment-improvement': ['Kitchen', 'Equipment Area', 'Maintenance Room'],
+                'training-completed': ['Kitchen', 'Training Room', 'Office'],
+                'cleaning-improvement': ['Kitchen', 'Dining Area', 'Storage'],
+                'general-improvement': ['Kitchen', 'General Area', 'Office']
+            };
+            
+            if (locationSuggestions[category] && !document.getElementById('update-location').value) {
+                document.getElementById('update-location').value = locationSuggestions[category][0];
+            }
+            
+            // Update recent items
+            updateUpdateRecentItems();
+        }
+
+        // Recent items for updates
+        function updateUpdateRecentItems() {
+            // Get recent locations from updates
+            const recentLocationsSet = new Set();
+            updates.slice(0, 10).forEach(update => {
+                if (update.location) recentLocationsSet.add(update.location);
+            });
+            const updateRecentLocations = Array.from(recentLocationsSet).slice(0, 5);
+            
+            // Get recent staff from updates
+            const recentStaffSet = new Set();
+            updates.slice(0, 10).forEach(update => {
+                if (update.staffMember) {
+                    update.staffMember.split(',').forEach(staff => {
+                        recentStaffSet.add(staff.trim());
+                    });
+                }
+            });
+            const updateRecentStaff = Array.from(recentStaffSet).slice(0, 5);
+            
+            // Update UI
+            updateUpdateRecentLocationsUI(updateRecentLocations);
+            updateUpdateRecentStaffUI(updateRecentStaff);
+        }
+
+        function updateUpdateRecentLocationsUI(recentLocations) {
+            const container = document.getElementById('update-recent-locations');
+            if (!container) return;
+            
+            if (recentLocations.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = recentLocations.map(location => 
+                `<span class="recent-item" onclick="selectUpdateRecentLocation('${location}')">📍 ${location}</span>`
+            ).join('');
+        }
+
+        function updateUpdateRecentStaffUI(recentStaff) {
+            const container = document.getElementById('update-recent-staff');
+            if (!container) return;
+            
+            if (recentStaff.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = recentStaff.map(staff => 
+                `<span class="recent-item" onclick="selectUpdateRecentStaff('${staff}')">👤 ${staff}</span>`
+            ).join('');
+        }
+
+        function selectUpdateRecentLocation(location) {
+            document.getElementById('update-location').value = location;
+            showQuickMessage(`📍 Location set: ${location}`);
+        }
+
+        function selectUpdateRecentStaff(staff) {
+            // Add to selected staff
+            if (!updateSelectedStaffMembers.some(s => s.name === staff)) {
+                const staffMember = staffMembers.find(s => s.name === staff) || { id: Date.now().toString(), name: staff };
+                updateSelectedStaffMembers.push(staffMember);
+                updateUpdateSelectedStaffTags();
+                updateUpdateHiddenInput();
+            }
+            showQuickMessage(`👤 Staff added: ${staff}`);
+        }
+
+        // Staff selection for updates
+        function setupUpdateStaffSelector() {
+            const input = document.getElementById('update-staff-input');
+            const dropdown = document.getElementById('update-staff-dropdown');
+            
+            input.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                if (query.length < 2) {
+                    dropdown.style.display = 'none';
+                    return;
+                }
+                
+                const filteredStaff = staffMembers.filter(staff => 
+                    staff.name.toLowerCase().includes(query)
+                );
+                
+                if (filteredStaff.length > 0) {
+                    dropdown.innerHTML = filteredStaff.map(staff => 
+                        `<div class="staff-option" onclick="selectUpdateStaff('${staff.name}')">👤 ${staff.name}</div>`
+                    ).join('');
+                    dropdown.style.display = 'block';
+                } else {
+                    dropdown.style.display = 'none';
+                }
+            });
+            
+            input.addEventListener('blur', function() {
+                setTimeout(() => {
+                    dropdown.style.display = 'none';
+                }, 200);
+            });
+        }
+
+        function selectUpdateStaff(staffName) {
+            if (!updateSelectedStaffMembers.some(s => s.name === staffName)) {
+                const staffMember = staffMembers.find(s => s.name === staffName) || { id: Date.now().toString(), name: staffName };
+                updateSelectedStaffMembers.push(staffMember);
+                updateUpdateSelectedStaffTags();
+                updateUpdateHiddenInput();
+            }
+            document.getElementById('update-staff-input').value = '';
+            document.getElementById('update-staff-dropdown').style.display = 'none';
+        }
+
+        function updateUpdateSelectedStaffTags() {
+            const container = document.getElementById('update-selected-staff-tags');
+            container.innerHTML = updateSelectedStaffMembers.map(staff => 
+                `<span class="staff-tag">👤 ${staff.name} <button onclick="removeUpdateStaff('${staff.name}')" class="remove-staff">×</button></span>`
+            ).join('');
+        }
+
+        function removeUpdateStaff(staffName) {
+            updateSelectedStaffMembers = updateSelectedStaffMembers.filter(s => s.name !== staffName);
+            updateUpdateSelectedStaffTags();
+            updateUpdateHiddenInput();
+        }
+
+        function updateUpdateHiddenInput() {
+            const staffNames = updateSelectedStaffMembers.map(s => s.name).join(', ');
+            document.getElementById('update-staff').value = staffNames;
+        }
+
+        function clearUpdateStaffSelection() {
+            updateSelectedStaffMembers = [];
+            updateUpdateSelectedStaffTags();
+            updateUpdateHiddenInput();
+        }
+
+        // Photo handling for updates
+        function handleUpdatePhotoUpload(event) {
+            const files = Array.from(event.target.files);
+            files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        updatePhotos.push({
+                            name: file.name,
+                            data: e.target.result,
+                            size: file.size
+                        });
+                        updateUpdatePhotoPreview();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function updateUpdatePhotoPreview() {
+            const container = document.getElementById('update-photo-preview');
+            container.innerHTML = updatePhotos.map((photo, index) => `
+                <div class="photo-item">
+                    <img src="${photo.data}" alt="Photo ${index + 1}" onclick="viewUpdatePhoto(${index})">
+                    <button onclick="removeUpdatePhoto(${index})" class="remove-photo">×</button>
+                </div>
+            `).join('');
+        }
+
+        function removeUpdatePhoto(index) {
+            updatePhotos.splice(index, 1);
+            updateUpdatePhotoPreview();
+        }
+
+        function viewUpdatePhoto(index) {
+            const photo = updatePhotos[index];
+            document.getElementById('modal-image').src = photo.data;
+            document.getElementById('photo-modal').style.display = 'block';
+        }
+
+        // Voice input for updates
+        let updateRecognition = null;
+        let isUpdateListening = false;
+
+        function toggleUpdateVoiceInput() {
+            if (!isUpdateListening) {
+                startUpdateVoiceInput();
+            } else {
+                stopUpdateVoiceInput();
+            }
+        }
+
+        function startUpdateVoiceInput() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('❌ Voice input is not supported in this browser. Please use Chrome or Edge.');
+                return;
+            }
+
+            updateRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            updateRecognition.continuous = true;
+            updateRecognition.interimResults = true;
+            updateRecognition.lang = 'en-US';
+
+            updateRecognition.onstart = function() {
+                isUpdateListening = true;
+                document.getElementById('update-voice-input-btn').classList.add('voice-active');
+                document.getElementById('update-voice-status').style.display = 'block';
+                document.getElementById('update-voice-status-text').textContent = '🎤 Listening... Speak now';
+            };
+
+            updateRecognition.onresult = function(event) {
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    }
+                }
+                
+                if (finalTranscript) {
+                    const currentText = document.getElementById('update-description').value;
+                    document.getElementById('update-description').value = currentText + (currentText ? ' ' : '') + finalTranscript;
+                }
+            };
+
+            updateRecognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                stopUpdateVoiceInput();
+                showQuickMessage('❌ Voice input error. Please try again.');
+            };
+
+            updateRecognition.onend = function() {
+                stopUpdateVoiceInput();
+            };
+
+            updateRecognition.start();
+        }
+
+        function stopUpdateVoiceInput() {
+            if (updateRecognition) {
+                updateRecognition.stop();
+            }
+            isUpdateListening = false;
+            document.getElementById('update-voice-input-btn').classList.remove('voice-active');
+            document.getElementById('update-voice-status').style.display = 'none';
+        }
+
+        // Form handling for updates
+        function clearUpdateForm() {
+            if (confirm('Are you sure you want to clear the update form?')) {
+                document.getElementById('update-form').reset();
+                updatePhotos = [];
+                updateUpdatePhotoPreview();
+                clearUpdateStaffSelection();
+                showQuickMessage('🗑️ Update form cleared');
+            }
+        }
+
+        // Save update to Firebase
+        async function saveUpdateToFirebase(update) {
+            if (!currentUser) {
+                throw new Error('User not signed in');
+            }
+
+            // Prepare update data
+            const updateData = {
+                ...update,
+                userId: currentUser.uid,
+                userEmail: currentUser.email,
+                timestamp: new Date().toISOString() // Use local timestamp for offline compatibility
+            };
+
+            // Add to local array immediately
+            updates.unshift(updateData);
+            
+            // Update UI
+            updateRecentImprovements();
+            
+            // Save locally for offline access
+            saveOfflineData();
+
+            // If online, upload photos and save to Firebase
+            if (isOnline && isFirebaseInitialized) {
+                try {
+                    // Upload photos to Firebase Storage
+                    const photoUrls = [];
+                    for (const photo of update.photos) {
+                        const photoRef = storage.ref(`updates/${currentUser.uid}/${Date.now()}_${photo.name}`);
+                        const response = await fetch(photo.data);
+                        const blob = await response.blob();
+                        await photoRef.put(blob);
+                        const url = await photoRef.getDownloadURL();
+                        photoUrls.push(url);
+                    }
+
+                    // Update with photo URLs
+                    updateData.photos = photoUrls;
+                    updateData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+
+                    await db.collection('users').doc(currentUser.uid).collection('updates').add(updateData);
+                    console.log('✅ Update saved to Firebase');
+                } catch (error) {
+                    console.error('Error saving to Firebase:', error);
+                    // Add to pending queue for later sync
+                    pendingUpdates.push(updateData);
+                    saveOfflineData();
+                    console.log('📴 Added to pending sync queue');
+                }
+            } else {
+                // Offline mode - add to pending queue
+                pendingUpdates.push(updateData);
+                saveOfflineData();
+                console.log('📴 Saved locally - will sync when online');
+            }
+            
+            return updateData;
+        }
+
+        // Load updates from Firebase
+        async function loadUpdatesFromFirebase() {
+            if (!isFirebaseInitialized || !currentUser) return;
+
+            try {
+                const snapshot = await db.collection('users').doc(currentUser.uid).collection('updates')
+                    .orderBy('timestamp', 'desc')
+                    .get();
+
+                updates = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                updateRecentImprovements();
+            } catch (error) {
+                console.error('Error loading updates:', error);
+            }
+        }
+
+        // Update recent improvements UI
+        function updateRecentImprovements() {
+            const container = document.getElementById('recent-improvements');
+            if (!container) return;
+
+            const recentUpdates = updates.slice(0, 6); // Show last 6 updates
+            
+            container.innerHTML = recentUpdates.map(update => `
+                <div class="update-card" style="background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);">
+                    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 15px;">
+                        <span style="font-size: 1.5rem;">${getUpdateCategoryIcon(update.category)}</span>
+                        <span style="padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; ${getImpactStyle(update.impact)}">
+                            ${update.impact.toUpperCase()}
+                        </span>
+                    </div>
+                    <h4 style="margin-bottom: 10px; color: #2c3e50;">${getUpdateCategoryName(update.category)}</h4>
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px; line-height: 1.4;">${update.description}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: #888;">
+                        <span>📍 ${update.location}</span>
+                        <span>👤 ${update.staffMember || 'N/A'}</span>
+                    </div>
+                    ${update.photos && update.photos.length > 0 ? `
+                        <div style="margin-top: 10px;">
+                            <span style="font-size: 0.8rem; color: #888;">📸 ${update.photos.length} photo(s)</span>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Utility functions for updates
+        function getUpdateCategoryName(category) {
+            const names = {
+                'new-sign': 'New Sign/Label Added',
+                'procedure-update': 'Procedure Updated',
+                'equipment-improvement': 'Equipment Improvement',
+                'training-completed': 'Training Completed',
+                'cleaning-improvement': 'Cleaning Improvement',
+                'general-improvement': 'General Improvement'
+            };
+            return names[category] || category;
+        }
+
+        function getUpdateCategoryIcon(category) {
+            const icons = {
+                'new-sign': '📋',
+                'procedure-update': '📝',
+                'equipment-improvement': '🔧',
+                'training-completed': '🎓',
+                'cleaning-improvement': '🧽',
+                'general-improvement': '✨'
+            };
+            return icons[category] || '✨';
+        }
+
+        function getImpactStyle(impact) {
+            const styles = {
+                'low': 'background: #d4edda; color: #155724;',
+                'medium': 'background: #fff3cd; color: #856404;',
+                'high': 'background: #f8d7da; color: #721c24;'
+            };
+            return styles[impact] || 'background: #e2e3e5; color: #383d41;';
+        }
+
+        // Setup update form event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup update form
+            const updateForm = document.getElementById('update-form');
+            if (updateForm) {
+                updateForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = {
+                        id: Date.now().toString(),
+                        date: new Date().toISOString(),
+                        category: document.getElementById('update-category').value,
+                        impact: document.getElementById('update-impact').value,
+                        staffMember: document.getElementById('update-staff').value,
+                        location: document.getElementById('update-location').value,
+                        description: document.getElementById('update-description').value,
+                        photos: [...updatePhotos]
+                    };
+
+                    try {
+                        await saveUpdateToFirebase(formData);
+                        clearUpdateForm();
+                        showQuickMessage('✅ Improvement saved successfully!');
+                    } catch (error) {
+                        console.error('Error saving improvement:', error);
+                        alert('❌ Failed to save improvement. Please try again.');
+                    }
+                });
+            }
+
+            // Setup update staff selector
+            setupUpdateStaffSelector();
+        });
+
         // Add CSS animations
         const style = document.createElement('style');
         style.textContent = `
@@ -4728,834 +5919,305 @@
         `;
         document.head.appendChild(style);
 
-        // ===== QUALITY OF LIFE FEATURES =====
-
-        // Theme management
-        let isDarkMode = localStorage.getItem('darkMode') === 'true';
-
-        function toggleTheme() {
-            isDarkMode = !isDarkMode;
-            document.body.classList.toggle('dark-mode', isDarkMode);
-            localStorage.setItem('darkMode', isDarkMode);
-            
-            // Update theme toggle button
-            const themeBtn = document.querySelector('#theme-toggle button');
-            themeBtn.textContent = isDarkMode ? '☀️' : '🌙';
-            themeBtn.title = isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-            
-            showQuickMessage(isDarkMode ? '🌙 Dark mode enabled' : '☀️ Light mode enabled');
-        }
-
-        // Initialize theme
-        function initializeTheme() {
-            document.body.classList.toggle('dark-mode', isDarkMode);
-            const themeBtn = document.querySelector('#theme-toggle button');
-            if (themeBtn) {
-                themeBtn.textContent = isDarkMode ? '☀️' : '🌙';
-                themeBtn.title = isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-            }
-        }
-
-        // Keyboard shortcuts
-        function setupKeyboardShortcuts() {
-            document.addEventListener('keydown', function(e) {
-                // Only trigger shortcuts when not typing in input fields
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-                    return;
-                }
-
-                // Ctrl+N: New Record
-                if (e.ctrlKey && e.key === 'n') {
-                    e.preventDefault();
-                    showSection('add-record');
-                    showQuickMessage('⌨️ New record form opened');
-                }
-
-                // Ctrl+S: Save Record (when on add record form)
-                if (e.ctrlKey && e.key === 's') {
-                    e.preventDefault();
-                    const addRecordSection = document.getElementById('add-record');
-                    if (addRecordSection.classList.contains('active')) {
-                        document.getElementById('record-form').dispatchEvent(new Event('submit'));
-                    }
-                }
-
-                // Ctrl+D: Save as Draft
-                if (e.ctrlKey && e.key === 'd') {
-                    e.preventDefault();
-                    saveAsDraft();
-                }
-
-                // Ctrl+F: Search Records
-                if (e.ctrlKey && e.key === 'f') {
-                    e.preventDefault();
-                    showSection('timeline');
-                    setTimeout(() => {
-                        document.getElementById('search-input').focus();
-                    }, 100);
-                    showQuickMessage('🔍 Search focused');
-                }
-
-                // Ctrl+T: Toggle Theme
-                if (e.ctrlKey && e.key === 't') {
-                    e.preventDefault();
-                    toggleTheme();
-                }
-
-                // Ctrl+?: Show/Hide Help
-                if (e.ctrlKey && e.key === '?') {
-                    e.preventDefault();
-                    toggleShortcutsHelp();
-                }
-
-                // Esc: Close modals
-                if (e.key === 'Escape') {
-                    closeAllModals();
-                }
-            });
-        }
-
-        function toggleShortcutsHelp() {
-            const help = document.getElementById('shortcuts-help');
-            if (help.style.display === 'none') {
-                help.style.display = 'block';
-                showQuickMessage('⌨️ Keyboard shortcuts shown');
-            } else {
-                help.style.display = 'none';
-            }
-        }
-
-        function hideShortcutsHelp() {
-            document.getElementById('shortcuts-help').style.display = 'none';
-        }
-
-        function closeAllModals() {
-            // Close quick add modal
-            document.getElementById('quick-add-modal').style.display = 'none';
-            // Close photo modal
-            document.getElementById('photo-modal').style.display = 'none';
-            // Hide shortcuts help
-            hideShortcutsHelp();
-        }
-
-        // Auto-save functionality
-        let autoSaveTimer = null;
-        let lastFormState = '';
-
-        function setupAutoSave() {
-            const form = document.getElementById('record-form');
-            if (!form) return;
-
-            const formFields = form.querySelectorAll('input, textarea, select');
-            
-            formFields.forEach(field => {
-                field.addEventListener('input', function() {
-                    clearTimeout(autoSaveTimer);
-                    autoSaveTimer = setTimeout(() => {
-                        const currentState = getFormState();
-                        if (currentState !== lastFormState && currentState !== '') {
-                            saveAsDraft();
-                            showAutoSaveIndicator();
-                            lastFormState = currentState;
-                        }
-                    }, 2000); // Auto-save after 2 seconds of inactivity
-                });
-            });
-        }
-
-        function getFormState() {
-            const form = document.getElementById('record-form');
-            if (!form) return '';
-            
-            const formData = new FormData(form);
-            return JSON.stringify(Object.fromEntries(formData));
-        }
-
-        function showAutoSaveIndicator() {
-            const indicator = document.getElementById('auto-save-indicator');
-            indicator.style.display = 'block';
-            
-            setTimeout(() => {
-                indicator.style.display = 'none';
-            }, 2000);
-        }
-
-        // Loading states
-        function showLoading(message = 'Loading...') {
-            const spinner = document.getElementById('loading-spinner');
-            const loadingText = spinner.querySelector('div:last-child');
-            loadingText.textContent = message;
-            spinner.style.display = 'block';
-        }
-
-        function hideLoading() {
-            document.getElementById('loading-spinner').style.display = 'none';
-        }
-
-        // Enhanced form validation with real-time feedback
-        function setupFormValidation() {
-            const form = document.getElementById('record-form');
-            if (!form) return;
-
-            const requiredFields = form.querySelectorAll('[required]');
-            
-            requiredFields.forEach(field => {
-                field.addEventListener('blur', function() {
-                    validateField(this);
-                });
-                
-                field.addEventListener('input', function() {
-                    if (this.classList.contains('error')) {
-                        validateField(this);
-                    }
-                });
-            });
-        }
-
-        function validateField(field) {
-            const isValid = field.checkValidity();
-            
-            if (isValid) {
-                field.classList.remove('error');
-                field.style.borderColor = '#28a745';
-            } else {
-                field.classList.add('error');
-                field.style.borderColor = '#dc3545';
-            }
-        }
-
-        // Enhanced error handling
-        function showError(message, duration = 5000) {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: rgba(220, 53, 69, 0.95);
-                color: white;
-                padding: 15px 20px;
-                border-radius: 10px;
-                box-shadow: 0 10px 25px rgba(220, 53, 69, 0.3);
-                z-index: 10000;
-                backdrop-filter: blur(10px);
-                border-left: 4px solid #dc3545;
-                animation: slideIn 0.3s ease;
-            `;
-            notification.textContent = `❌ ${message}`;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, duration);
-        }
-
-        // Enhanced success handling
-        function showSuccess(message, duration = 3000) {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: rgba(40, 167, 69, 0.95);
-                color: white;
-                padding: 15px 20px;
-                border-radius: 10px;
-                box-shadow: 0 10px 25px rgba(40, 167, 69, 0.3);
-                z-index: 10000;
-                backdrop-filter: blur(10px);
-                border-left: 4px solid #28a745;
-                animation: slideIn 0.3s ease;
-            `;
-            notification.textContent = `✅ ${message}`;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, duration);
-        }
-
-        // Smooth scrolling
-        function smoothScrollTo(element) {
-            element.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-
-        // Enhanced photo upload with drag and drop feedback
-        function enhancePhotoUpload() {
-            const photoUpload = document.querySelector('.photo-upload');
-            if (!photoUpload) return;
-
-            photoUpload.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.style.background = 'rgba(102, 126, 234, 0.2)';
-                this.style.borderColor = '#667eea';
-                this.style.transform = 'scale(1.02)';
-            });
-
-            photoUpload.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                this.style.background = '';
-                this.style.borderColor = '';
-                this.style.transform = '';
-            });
-
-            photoUpload.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.style.background = '';
-                this.style.borderColor = '';
-                this.style.transform = '';
-                
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    handleFiles(files);
-                    showQuickMessage(`📸 ${files.length} photo(s) uploaded`);
-                }
-            });
-        }
-
-        // Initialize all QoL features
-        function initializeQoLFeatures() {
-            initializeTheme();
-            setupKeyboardShortcuts();
-            setupAutoSave();
-            setupFormValidation();
-            enhancePhotoUpload();
-            setupScrollEffects();
-            setupProgressBar();
-            
-            // Add focus rings to interactive elements
-            document.querySelectorAll('button, input, textarea, select').forEach(el => {
-                el.classList.add('focus-ring');
-            });
-            
-            // Add hover effects to cards
-            document.querySelectorAll('.timeline-item, .stat-card').forEach(el => {
-                el.classList.add('hover-lift');
-            });
-            
-            // Add micro-interactions
-            addMicroInteractions();
-            
-            // Initialize advanced QoL features
-            initializeAdvancedQoLFeatures();
-        }
-
-        // Scroll effects
-        function setupScrollEffects() {
-            window.addEventListener('scroll', function() {
-                const backToTop = document.getElementById('back-to-top');
-                if (window.scrollY > 300) {
-                    backToTop.style.display = 'block';
-                } else {
-                    backToTop.style.display = 'none';
-                }
-            });
-        }
-
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        }
-
-        // Progress bar
-        function setupProgressBar() {
-            window.addEventListener('scroll', function() {
-                const scrollTop = window.scrollY;
-                const docHeight = document.body.scrollHeight - window.innerHeight;
-                const scrollPercent = (scrollTop / docHeight) * 100;
-                
-                const progressBar = document.getElementById('progress-bar');
-                progressBar.style.width = scrollPercent + '%';
-            });
-        }
-
-        // Enhanced micro-interactions
-        function addMicroInteractions() {
-            // Add ripple effect to buttons
-            document.querySelectorAll('.btn').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    const ripple = document.createElement('span');
-                    const rect = this.getBoundingClientRect();
-                    const size = Math.max(rect.width, rect.height);
-                    const x = e.clientX - rect.left - size / 2;
-                    const y = e.clientY - rect.top - size / 2;
-                    
-                    ripple.style.cssText = `
-                        position: absolute;
-                        width: ${size}px;
-                        height: ${size}px;
-                        left: ${x}px;
-                        top: ${y}px;
-                        background: rgba(255, 255, 255, 0.3);
-                        border-radius: 50%;
-                        transform: scale(0);
-                        animation: ripple 0.6s linear;
-                        pointer-events: none;
-                    `;
-                    
-                    this.appendChild(ripple);
-                    
-                    setTimeout(() => {
-                        ripple.remove();
-                    }, 600);
-                });
-            });
-        }
-
-        // Add ripple animation
-        const rippleStyle = document.createElement('style');
-        rippleStyle.textContent = `
-            @keyframes ripple {
-                to {
-                    transform: scale(4);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(rippleStyle);
-
-        // ===== ADVANCED QoL FEATURES =====
-
-        // Undo/Redo System
-        let actionHistory = [];
-        let currentActionIndex = -1;
-        let maxHistorySize = 20;
-
-        function addToHistory(action) {
-            // Remove any actions after current index
-            actionHistory = actionHistory.slice(0, currentActionIndex + 1);
-            
-            // Add new action
-            actionHistory.push(action);
-            currentActionIndex++;
-            
-            // Limit history size
-            if (actionHistory.length > maxHistorySize) {
-                actionHistory.shift();
-                currentActionIndex--;
-            }
-            
-            updateUndoRedoButtons();
-        }
-
-        function undoAction() {
-            if (currentActionIndex >= 0) {
-                const action = actionHistory[currentActionIndex];
-                if (action.undo) {
-                    action.undo();
-                }
-                currentActionIndex--;
-                updateUndoRedoButtons();
-                showQuickMessage('↶ Action undone');
-            }
-        }
-
-        function redoAction() {
-            if (currentActionIndex < actionHistory.length - 1) {
-                currentActionIndex++;
-                const action = actionHistory[currentActionIndex];
-                if (action.redo) {
-                    action.redo();
-                }
-                updateUndoRedoButtons();
-                showQuickMessage('↷ Action redone');
-            }
-        }
-
-        function updateUndoRedoButtons() {
-            const undoBtn = document.getElementById('undo-btn');
-            const redoBtn = document.getElementById('redo-btn');
-            const undoRedo = document.getElementById('undo-redo');
-            
-            if (actionHistory.length > 0) {
-                undoRedo.style.display = 'block';
-                undoBtn.disabled = currentActionIndex < 0;
-                redoBtn.disabled = currentActionIndex >= actionHistory.length - 1;
-                
-                undoBtn.style.opacity = undoBtn.disabled ? '0.5' : '1';
-                redoBtn.style.opacity = redoBtn.disabled ? '0.5' : '1';
-            } else {
-                undoRedo.style.display = 'none';
-            }
-        }
-
-        // Quick Stats Widget
-        function showQuickStats() {
-            const stats = document.getElementById('quick-stats');
-            if (stats.style.display === 'none') {
-                updateQuickStats();
-                stats.style.display = 'block';
-                showQuickMessage('📊 Quick stats shown');
-            }
-        }
-
-        function hideQuickStats() {
-            document.getElementById('quick-stats').style.display = 'none';
-        }
-
-        function updateQuickStats() {
-            const today = new Date().toDateString();
-            const todayRecords = records.filter(r => new Date(r.date).toDateString() === today);
-            const highPriorityRecords = records.filter(r => r.priority === 'high');
-            const activeStaff = new Set(records.slice(0, 50).map(r => r.staffMember)).size;
-            
-            document.getElementById('today-count').textContent = todayRecords.length;
-            document.getElementById('high-priority-count').textContent = highPriorityRecords.length;
-            document.getElementById('active-staff-count').textContent = activeStaff;
-        }
-
-        // Smart Search Suggestions
-        function setupSmartSearch() {
-            const searchInput = document.getElementById('search-input');
-            if (!searchInput) return;
-            
-            searchInput.addEventListener('input', function() {
-                const query = this.value.toLowerCase();
-                if (query.length < 2) {
-                    hideSearchSuggestions();
-                    return;
-                }
-                
-                const suggestions = generateSearchSuggestions(query);
-                showSearchSuggestions(suggestions);
-            });
-            
-            searchInput.addEventListener('blur', function() {
-                setTimeout(hideSearchSuggestions, 200);
-            });
-        }
-
-        function generateSearchSuggestions(query) {
-            const suggestions = [];
-            
-            // Staff suggestions
-            staffMembers.forEach(staff => {
-                if (staff.name.toLowerCase().includes(query)) {
-                    suggestions.push({
-                        type: 'staff',
-                        text: `👤 ${staff.name}`,
-                        value: staff.name
-                    });
-                }
-            });
-            
-            // Location suggestions
-            const locations = [...new Set(records.map(r => r.location))];
-            locations.forEach(location => {
-                if (location.toLowerCase().includes(query)) {
-                    suggestions.push({
-                        type: 'location',
-                        text: `📍 ${location}`,
-                        value: location
-                    });
-                }
-            });
-            
-            // Category suggestions
-            const categories = ['food-safety', 'cleaning', 'equipment', 'training', 'health-safety'];
-            categories.forEach(category => {
-                if (category.includes(query) || getCategoryName(category).toLowerCase().includes(query)) {
-                    suggestions.push({
-                        type: 'category',
-                        text: `${getCategoryIcon(category)} ${getCategoryName(category)}`,
-                        value: category
-                    });
-                }
-            });
-            
-            return suggestions.slice(0, 8);
-        }
-
-        function getCategoryIcon(category) {
-            const icons = {
-                'food-safety': '🍽️',
-                'health-safety': '⚕️',
-                'cleaning': '🧽',
-                'training': '📚',
-                'equipment': '🔧'
-            };
-            return icons[category] || '📋';
-        }
-
-        function showSearchSuggestions(suggestions) {
-            const container = document.getElementById('search-suggestions');
-            if (suggestions.length === 0) {
-                hideSearchSuggestions();
+        // Keyboard shortcuts for faster logging
+        document.addEventListener('keydown', function(e) {
+            // Only activate shortcuts when not typing in input fields
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
                 return;
             }
             
-            container.innerHTML = suggestions.map(suggestion => `
-                <div class="search-suggestion" onclick="selectSearchSuggestion('${suggestion.value}')" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f3f4; transition: background 0.2s ease;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
-                    ${suggestion.text}
-                </div>
-            `).join('');
+            // Ctrl/Cmd + N: Quick add record
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                showQuickAddModal();
+            }
             
-            container.style.display = 'block';
+            // Ctrl/Cmd + Shift + N: Full add record
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'N') {
+                e.preventDefault();
+                showSection('add-record');
+            }
+            
+            // Ctrl/Cmd + D: Save as draft
+            if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                e.preventDefault();
+                saveAsDraft();
+            }
+            
+            // Ctrl/Cmd + L: Load draft
+            if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+                e.preventDefault();
+                loadDraft();
+            }
+            
+            // Ctrl/Cmd + 1-5: Quick category selection (when in add record form)
+            if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '5') {
+                const categorySelect = document.getElementById('category');
+                if (categorySelect && document.getElementById('add-record').classList.contains('active')) {
+                    e.preventDefault();
+                    const categories = ['', 'food-safety', 'health-safety', 'cleaning', 'training', 'equipment'];
+                    const index = parseInt(e.key);
+                    if (categories[index]) {
+                        categorySelect.value = categories[index];
+                        updateSmartDefaults();
+                        showQuickMessage(`📋 Category set: ${getCategoryName(categories[index])}`);
+                    }
+                }
+            }
+            
+            // Ctrl/Cmd + H/M/L: Quick priority selection
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'h' || e.key === 'm' || e.key === 'l')) {
+                const prioritySelect = document.getElementById('priority');
+                if (prioritySelect && document.getElementById('add-record').classList.contains('active')) {
+                    e.preventDefault();
+                    const priority = e.key === 'h' ? 'high' : e.key === 'm' ? 'medium' : 'low';
+                    prioritySelect.value = priority;
+                    updateSmartDefaults();
+                    showQuickMessage(`🎯 Priority set: ${priority.toUpperCase()}`);
+                }
+            }
+        });
+
+        // Enhanced quick entry with auto-completion
+        function setupQuickEntryEnhancements() {
+            // Auto-focus description field when quick modal opens
+            const quickDescription = document.getElementById('quick-description');
+            if (quickDescription) {
+                quickDescription.addEventListener('focus', function() {
+                    // Auto-populate with common phrases based on time of day
+                    const hour = new Date().getHours();
+                    let timeBasedSuggestion = '';
+                    
+                    if (hour >= 6 && hour < 12) {
+                        timeBasedSuggestion = 'Morning inspection: ';
+                    } else if (hour >= 12 && hour < 17) {
+                        timeBasedSuggestion = 'Afternoon check: ';
+                    } else if (hour >= 17 && hour < 22) {
+                        timeBasedSuggestion = 'Evening review: ';
+                    } else {
+                        timeBasedSuggestion = 'Night shift: ';
+                    }
+                    
+                    if (!this.value) {
+                        this.value = timeBasedSuggestion;
+                        this.setSelectionRange(timeBasedSuggestion.length, timeBasedSuggestion.length);
+                    }
+                });
+            }
+            
+            // Enhanced smart defaults with location detection
+            setupLocationDetection();
         }
 
-        function hideSearchSuggestions() {
-            document.getElementById('search-suggestions').style.display = 'none';
-        }
-
-        function selectSearchSuggestion(value) {
-            document.getElementById('search-input').value = value;
-            hideSearchSuggestions();
-            // Trigger search
-            document.getElementById('search-input').dispatchEvent(new Event('input'));
-        }
-
-        // Bulk Actions System
-        let selectedRecords = new Set();
-
-        function setupBulkActions() {
-            // Add event listeners for checkbox changes
-            const timelineContainer = document.getElementById('timeline-container');
-            if (timelineContainer) {
-                timelineContainer.addEventListener('change', function(e) {
-                    if (e.target.type === 'checkbox') {
-                        updateBulkActions();
+        // Location detection based on common patterns
+        function setupLocationDetection() {
+            const locationInput = document.getElementById('location');
+            if (locationInput) {
+                locationInput.addEventListener('input', function() {
+                    const value = this.value.toLowerCase();
+                    
+                    // Auto-suggest based on partial input
+                    const suggestions = {
+                        'kit': 'Kitchen',
+                        'prep': 'Prep Area',
+                        'stor': 'Storage',
+                        'ref': 'Refrigeration',
+                        'free': 'Freezer',
+                        'dish': 'Dishwashing Area',
+                        'serv': 'Service Area',
+                        'dining': 'Dining Room',
+                        'bath': 'Bathroom',
+                        'equip': 'Equipment Area'
+                    };
+                    
+                    for (const [key, suggestion] of Object.entries(suggestions)) {
+                        if (value.includes(key) && value.length < suggestion.length) {
+                            this.value = suggestion;
+                            this.setSelectionRange(value.length, suggestion.length);
+                            break;
+                        }
                     }
                 });
             }
         }
 
-        function updateBulkActions() {
-            const checkboxes = document.querySelectorAll('.timeline-item input[type="checkbox"]:checked');
-            selectedRecords = new Set(Array.from(checkboxes).map(cb => cb.id.replace('select-', '')));
-            
-            const bulkActions = document.getElementById('bulk-actions');
-            const selectedCount = document.getElementById('selected-count');
-            
-            if (selectedRecords.size > 0) {
-                bulkActions.style.display = 'block';
-                selectedCount.textContent = selectedRecords.size;
-            } else {
-                bulkActions.style.display = 'none';
+        // Enhanced quick save with more context
+        async function enhancedQuickSave(priority, category = 'food-safety') {
+            const description = document.getElementById('quick-description').value.trim();
+            if (!description) {
+                alert('Please enter a description');
+                return;
             }
-        }
 
-        function bulkExport() {
-            if (selectedRecords.size === 0) return;
+            // Auto-detect location from description
+            let detectedLocation = 'General Area';
+            const descLower = description.toLowerCase();
             
-            const selectedData = records.filter(r => selectedRecords.has(r.id));
-            const exportData = {
-                exportDate: new Date().toISOString(),
-                selectedRecords: selectedData.length,
-                records: selectedData
+            if (descLower.includes('kitchen') || descLower.includes('cook')) {
+                detectedLocation = 'Kitchen';
+            } else if (descLower.includes('prep') || descLower.includes('cutting')) {
+                detectedLocation = 'Prep Area';
+            } else if (descLower.includes('storage') || descLower.includes('pantry')) {
+                detectedLocation = 'Storage';
+            } else if (descLower.includes('refrigerator') || descLower.includes('fridge') || descLower.includes('cold')) {
+                detectedLocation = 'Refrigeration';
+            } else if (descLower.includes('freezer') || descLower.includes('frozen')) {
+                detectedLocation = 'Freezer';
+            } else if (descLower.includes('dish') || descLower.includes('wash')) {
+                detectedLocation = 'Dishwashing Area';
+            } else if (descLower.includes('service') || descLower.includes('dining')) {
+                detectedLocation = 'Service Area';
+            }
+
+            const record = {
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                category: category,
+                priority: priority,
+                staffMember: smartDefaults.staffMember || 'Staff Member',
+                location: detectedLocation,
+                description: description,
+                photos: [],
+                lastModified: new Date().toISOString()
             };
-            
-            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `selected-records-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            showSuccess(`Exported ${selectedRecords.size} records`);
-            cancelBulkActions();
+
+            try {
+                if (currentUser && isFirebaseInitialized) {
+                    await db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(record.id).set(record);
+                }
+                
+                records.unshift(record);
+                updateDashboard();
+                updateTimeline();
+                
+                // Update staff warnings if staff member is specified
+                if (record.staffMember && record.staffMember !== 'Staff Member') {
+                    updateStaffWarning(record.staffMember);
+                }
+                
+                // Update connection status to show sync button if needed
+                updateConnectionStatus();
+                
+                closeQuickAddModal();
+                showQuickMessage(`⚡ Quick ${priority} priority record saved!`);
+                
+            } catch (error) {
+                console.error('Error saving quick record:', error);
+                alert('Failed to save record. Please try again.');
+            }
         }
 
-        async function bulkDelete() {
-            if (selectedRecords.size === 0) return;
+        // Override existing quickSave function
+        async function quickSave(priority) {
+            await enhancedQuickSave(priority);
+        }
+
+        // Add keyboard shortcuts info to the UI
+        function addKeyboardShortcutsInfo() {
+            const shortcutsInfo = `
+                <div style="background: rgba(102, 126, 234, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+                    <h4 style="color: #667eea; margin-bottom: 10px;">⌨️ Keyboard Shortcuts</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 0.9rem;">
+                        <div><strong>Ctrl+N:</strong> Quick Add Record</div>
+                        <div><strong>Ctrl+Shift+N:</strong> Full Add Record</div>
+                        <div><strong>Ctrl+D:</strong> Save as Draft</div>
+                        <div><strong>Ctrl+L:</strong> Load Draft</div>
+                        <div><strong>Ctrl+1-5:</strong> Quick Category</div>
+                        <div><strong>Ctrl+H/M/L:</strong> Quick Priority</div>
+                    </div>
+                </div>
+            `;
             
-            if (confirm(`Are you sure you want to delete ${selectedRecords.size} records? This action cannot be undone.`)) {
-                if (!currentUser || !isFirebaseInitialized) {
-                    showError('Please sign in to delete records');
-                    return;
-                }
-
-                const batch = db.batch();
-                const recordIds = Array.from(selectedRecords);
-                
-                for (const recordId of recordIds) {
-                    const docRef = db.collection('users').doc(currentUser.uid).collection('safetyRecords').doc(recordId);
-                    batch.delete(docRef);
-                }
-
-                try {
-                    await batch.commit();
-                    
-                    // Remove from local records
-                    records = records.filter(r => !recordIds.includes(r.id));
-                    
-                    // Update displays
-                    updateDashboard();
-                    updateTimeline();
-                    
-                    showSuccess(`Successfully deleted ${selectedRecords.size} records!`);
-                    cancelBulkActions();
-                    
-                } catch (error) {
-                    console.error('Error deleting records:', error);
-                    showError('Failed to delete some records. Please try again.');
+            // Add to add-record section
+            const addRecordSection = document.getElementById('add-record');
+            if (addRecordSection) {
+                const existingInfo = addRecordSection.querySelector('.smart-defaults-info');
+                if (existingInfo) {
+                    existingInfo.insertAdjacentHTML('afterend', shortcutsInfo);
                 }
             }
         }
 
-        function cancelBulkActions() {
-            selectedRecords.clear();
-            document.querySelectorAll('.timeline-item input[type="checkbox"]').forEach(cb => {
-                cb.checked = false;
-            });
-            document.getElementById('bulk-actions').style.display = 'none';
+        // Initialize enhanced features
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... existing code ...
+            setupQuickEntryEnhancements();
+            addKeyboardShortcutsInfo();
+        });
+
+        // Enhanced form auto-completion
+        function setupFormAutoCompletion() {
+            const descriptionField = document.getElementById('description');
+            if (descriptionField) {
+                descriptionField.addEventListener('input', function() {
+                    const value = this.value.toLowerCase();
+                    
+                    // Auto-complete common phrases
+                    const completions = {
+                        'temp': 'temperature',
+                        'temp v': 'temperature violation',
+                        'cross': 'cross-contamination',
+                        'hyg': 'hygiene',
+                        'clean': 'cleaning',
+                        'main': 'maintenance',
+                        'train': 'training',
+                        'equip': 'equipment',
+                        'saf': 'safety',
+                        'viol': 'violation'
+                    };
+                    
+                    for (const [key, completion] of Object.entries(completions)) {
+                        if (value.endsWith(key + ' ') && !value.includes(completion)) {
+                            const before = this.value.substring(0, this.value.length - key.length - 1);
+                            this.value = before + completion + ' ';
+                            this.setSelectionRange(this.value.length, this.value.length);
+                            break;
+                        }
+                    }
+                });
+            }
         }
 
-        // Smart Tips System
-        const tips = [
-            "💡 Use Ctrl+N to quickly create a new record",
-            "💡 Try voice input for faster descriptions",
-            "💡 Use templates for common incidents",
-            "💡 Save drafts to continue later",
-            "💡 Use bulk actions to manage multiple records",
-            "💡 Dark mode is easier on the eyes",
-            "💡 Keyboard shortcuts speed up your workflow",
-            "💡 Auto-save prevents data loss",
-            "💡 Recent items help you work faster",
-            "💡 Use quick actions for common scenarios"
-        ];
 
-        let currentTipIndex = 0;
-        let tipInterval = null;
 
-        function startSmartTips() {
-            if (tipInterval) return;
+        // Enhanced smart defaults with more intelligence
+        function enhancedSmartDefaults() {
+            const hour = new Date().getHours();
+            const dayOfWeek = new Date().getDay();
             
-            tipInterval = setInterval(() => {
-                showSmartTip();
-            }, 30000); // Show tip every 30 seconds
+            // Time-based defaults
+            if (hour >= 6 && hour < 12) {
+                // Morning defaults
+                if (!smartDefaults.location) smartDefaults.location = 'Kitchen';
+                if (!smartDefaults.category) smartDefaults.category = 'food-safety';
+            } else if (hour >= 12 && hour < 17) {
+                // Afternoon defaults
+                if (!smartDefaults.location) smartDefaults.location = 'Prep Area';
+                if (!smartDefaults.category) smartDefaults.category = 'cleaning';
+            } else if (hour >= 17 && hour < 22) {
+                // Evening defaults
+                if (!smartDefaults.location) smartDefaults.location = 'Service Area';
+                if (!smartDefaults.category) smartDefaults.category = 'health-safety';
+            }
+            
+            // Day-based defaults
+            if (dayOfWeek === 1) { // Monday
+                if (!smartDefaults.category) smartDefaults.category = 'training';
+            } else if (dayOfWeek === 5) { // Friday
+                if (!smartDefaults.category) smartDefaults.category = 'cleaning';
+            }
+            
+            updateSmartDefaults();
         }
 
-        function showSmartTip() {
-            const tipContainer = document.getElementById('smart-tips');
-            const tipContent = document.getElementById('tip-content');
-            
-            tipContent.textContent = tips[currentTipIndex];
-            tipContainer.style.display = 'block';
-            
-            currentTipIndex = (currentTipIndex + 1) % tips.length;
-            
-            // Auto-hide after 8 seconds
-            setTimeout(() => {
-                hideSmartTip();
-            }, 8000);
-        }
-
-        function hideSmartTip() {
-            document.getElementById('smart-tips').style.display = 'none';
-        }
-
-        // Gesture Navigation (for mobile)
-        function setupGestureNavigation() {
-            if (!('ontouchstart' in window)) return;
-            
-            const gestureArea = document.getElementById('gesture-area');
-            gestureArea.style.display = 'block';
-            
-            let startX = 0;
-            let startY = 0;
-            
-            gestureArea.addEventListener('touchstart', function(e) {
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-            });
-            
-            gestureArea.addEventListener('touchend', function(e) {
-                const endX = e.changedTouches[0].clientX;
-                const endY = e.changedTouches[0].clientY;
-                
-                const deltaX = endX - startX;
-                const deltaY = endY - startY;
-                
-                // Swipe right to go back
-                if (deltaX > 50 && Math.abs(deltaY) < 50) {
-                    showQuickMessage('👈 Swipe right detected');
-                }
-                
-                // Swipe left to go forward
-                if (deltaX < -50 && Math.abs(deltaY) < 50) {
-                    showQuickMessage('👉 Swipe left detected');
-                }
-                
-                // Swipe up to show quick stats
-                if (deltaY < -50 && Math.abs(deltaX) < 50) {
-                    showQuickStats();
-                }
-            });
-        }
-
-        // Enhanced Timeline with Bulk Selection
-        function enhanceTimeline() {
-            const timelineContainer = document.getElementById('timeline-container');
-            if (!timelineContainer) return;
-            
-            // Add bulk selection checkbox to each timeline item
-            const timelineItems = timelineContainer.querySelectorAll('.timeline-item');
-            timelineItems.forEach(item => {
-                const recordId = item.dataset.recordId;
-                if (recordId) {
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.id = `select-${recordId}`;
-                    checkbox.style.cssText = `
-                        position: absolute;
-                        top: 10px;
-                        right: 10px;
-                        transform: scale(1.2);
-                        z-index: 10;
-                    `;
-                    item.style.position = 'relative';
-                    item.appendChild(checkbox);
-                }
-            });
-        }
-
-        // Enhanced initialization
-        function initializeAdvancedQoLFeatures() {
-            setupSmartSearch();
-            setupBulkActions();
-            setupGestureNavigation();
-            startSmartTips();
-            
-            // Add keyboard shortcuts for new features
-            document.addEventListener('keydown', function(e) {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                
-                // Ctrl+Z: Undo
-                if (e.ctrlKey && e.key === 'z') {
-                    e.preventDefault();
-                    undoAction();
-                }
-                
-                // Ctrl+Y: Redo
-                if (e.ctrlKey && e.key === 'y') {
-                    e.preventDefault();
-                    redoAction();
-                }
-                
-                // Ctrl+Shift+S: Show Quick Stats
-                if (e.ctrlKey && e.shiftKey && e.key === 'S') {
-                    e.preventDefault();
-                    showQuickStats();
-                }
-            });
-        }
+        // Initialize all enhanced features
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... existing code ...
+            setupQuickEntryEnhancements();
+            setupFormAutoCompletion();
+            addKeyboardShortcutsInfo();
+            enhancedSmartDefaults();
+        });
     </script>
 </body>
 </html>
