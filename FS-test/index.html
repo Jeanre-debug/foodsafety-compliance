@@ -898,7 +898,7 @@
         <div class="nav-buttons">
             <button class="nav-btn active" onclick="showSection('dashboard')">📊 Dashboard</button>
             <button class="nav-btn" onclick="showSection('add-record')">➕ Add Record</button>
-            <button class="nav-btn" onclick="showSection('updates-improvements')">✅ Updates & Improvements</button>
+            <button class="nav-btn" onclick="showSection('improvements')">✅ Improvements</button>
             <button class="nav-btn" onclick="showSection('timeline')">📋 Timeline</button>
             <button class="nav-btn" onclick="showSection('staff-warnings')">🚨 Staff Warnings</button>
             <button class="nav-btn" onclick="showSection('settings')">⚙️ Settings</button>
@@ -990,6 +990,7 @@
                             <option value="cleaning">🧽 Cleaning Standards</option>
                             <option value="training">📚 Training Required</option>
                             <option value="equipment">🔧 Equipment Issue</option>
+                            <option value="improvement">✅ Improvement Made</option>
                         </select>
                     </div>
 
@@ -1062,6 +1063,8 @@
             <button onclick="showQuickAddModal()" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 50%; width: 60px; height: 60px; cursor: pointer; font-size: 1.5rem; box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Quick Add Record">➕</button>
         </div>
 
+
+
         <!-- Quick Add Modal -->
         <div id="quick-add-modal" class="modal" style="display: none;">
             <div class="modal-content" style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
@@ -1080,6 +1083,8 @@
                 </div>
             </div>
         </div>
+
+
 
         <!-- Edit Record Section -->
         <div id="edit-record" class="section">
@@ -1289,9 +1294,17 @@
             <div id="staff-warnings-container"></div>
         </div>
 
-        <!-- Updates & Improvements Section -->
-        <div id="updates-improvements" class="section">
-            <h2 style="margin-bottom: 25px; color: #2c3e50;">✅ Updates & Improvements</h2>
+        <!-- Improvements Section -->
+        <div id="improvements" class="section">
+            <div style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 2.5rem;">✅</span>
+                    <div>
+                        <h2 style="margin: 0; font-size: 2rem;">Improvements</h2>
+                        <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 1.1rem;">Document positive changes and improvements to your food safety system</p>
+                    </div>
+                </div>
+            </div>
             
             <!-- Info Section -->
             <div style="background: rgba(40, 167, 69, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 25px; border-left: 4px solid #28a745;">
@@ -1306,29 +1319,22 @@
                     </div>
                 </div>
             </div>
-            
 
-            
-            <form id="update-form">
-                <!-- Compact Form Layout -->
+            <!-- Use the same form as Add Record but with improvement context -->
+            <form id="improvement-form">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                     <div class="form-group">
-                        <label for="update-category">Improvement Type</label>
-                        <select id="update-category" required onchange="updateSmartDefaults()">
-                            <option value="">Select Type</option>
-                            <option value="new-sign">📋 New Sign/Label Added</option>
-                            <option value="procedure-update">📝 Procedure Updated</option>
-                            <option value="equipment-improvement">🔧 Equipment Improvement</option>
-                            <option value="training-completed">🎓 Training Completed</option>
-                            <option value="cleaning-improvement">🧽 Cleaning Improvement</option>
-                            <option value="general-improvement">✨ General Improvement</option>
+                        <label for="improvement-category">Category</label>
+                        <select id="improvement-category" required onchange="updateSmartDefaults()">
+                            <option value="">Select Category</option>
+                            <option value="improvement" selected>✅ Improvement Made</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="update-impact">Impact Level</label>
-                        <select id="update-impact" required onchange="updateSmartDefaults()">
-                            <option value="">Select Impact</option>
+                        <label for="improvement-priority">Priority Level</label>
+                        <select id="improvement-priority" required onchange="updateSmartDefaults()">
+                            <option value="">Select Priority</option>
                             <option value="low">🟢 Low - Minor improvement</option>
                             <option value="medium">🟡 Medium - Notable improvement</option>
                             <option value="high">🔴 High - Significant improvement</option>
@@ -1338,55 +1344,61 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                     <div class="form-group">
-                        <label for="update-staff">Staff Member(s) Involved</label>
+                        <label for="improvement-staff">Staff Member(s) Involved</label>
                         <div class="staff-selector-container">
                             <div class="staff-input-wrapper">
-                                <input type="text" id="update-staff-input" placeholder="Type staff name or use recent..." autocomplete="off">
-                                <div id="update-staff-dropdown" class="staff-dropdown" style="display: none;"></div>
+                                <input type="text" id="improvement-staff-input" placeholder="Type staff name or use recent..." autocomplete="off">
+                                <div id="improvement-staff-dropdown" class="staff-dropdown" style="display: none;"></div>
                             </div>
-                            <div id="update-selected-staff-tags" class="selected-staff-tags"></div>
-                            <input type="hidden" id="update-staff" required>
+                            <div id="improvement-selected-staff-tags" class="selected-staff-tags"></div>
+                            <input type="hidden" id="improvement-staff" required>
                         </div>
                         <!-- Recent Staff Quick Select -->
-                        <div id="update-recent-staff" style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;"></div>
+                        <div id="improvement-recent-staff" style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;"></div>
                     </div>
 
                     <div class="form-group">
-                        <label for="update-location">Location</label>
-                        <input type="text" id="update-location" placeholder="Type location or use recent..." required>
+                        <label for="improvement-location">Location</label>
+                        <input type="text" id="improvement-location" placeholder="Type location or use recent..." required>
                         <!-- Recent Locations Quick Select -->
-                        <div id="update-recent-locations" style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;"></div>
+                        <div id="improvement-recent-locations" style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;"></div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="update-description">Description & Details</label>
+                    <label for="improvement-description">Description & Details</label>
                     <div style="position: relative;">
-                        <textarea id="update-description" placeholder="Describe the improvement, what was changed, and the benefits... (Click 🎤 for voice input)" required style="padding-right: 50px;"></textarea>
-                        <button type="button" id="update-voice-input-btn" onclick="toggleUpdateVoiceInput()" style="position: absolute; right: 10px; top: 10px; background: #28a745; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s ease;" title="Voice Input">🎤</button>
+                        <textarea id="improvement-description" placeholder="Describe the improvement, what was changed, and the benefits... (Click 🎤 for voice input)" required style="padding-right: 50px;"></textarea>
+                        <button type="button" id="improvement-voice-input-btn" onclick="toggleImprovementVoiceInput()" style="position: absolute; right: 10px; top: 10px; background: #28a745; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s ease;" title="Voice Input">🎤</button>
                     </div>
                     <!-- Voice Input Status -->
-                    <div id="update-voice-status" style="display: none; margin-top: 10px; padding: 10px; background: rgba(40, 167, 69, 0.1); border-radius: 8px; color: #28a745; font-size: 0.9rem;">
-                        <span id="update-voice-status-text">Click 🎤 to start voice input</span>
+                    <div id="improvement-voice-status" style="display: none; margin-top: 10px; padding: 10px; background: rgba(40, 167, 69, 0.1); border-radius: 8px; color: #28a745; font-size: 0.9rem;">
+                        <span id="improvement-voice-status-text">Click 🎤 to start voice input</span>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Upload Photos (Optional)</label>
-                    <div class="photo-upload" onclick="document.getElementById('update-photo-input').click()">
+                    <div class="photo-upload" onclick="document.getElementById('improvement-photo-input').click()">
                         <p>📸 Click to upload photos or drag & drop</p>
                         <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">Supports: JPG, PNG, WebP, DNG (Raw)</p>
                         <p style="font-size: 0.9rem; color: #666;">Perfect for documenting new signs, equipment, or improvements</p>
                     </div>
-                    <input type="file" id="update-photo-input" multiple accept="image/*" style="display: none;" onchange="handleUpdatePhotoUpload(event)">
-                    <div id="update-photo-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 15px;"></div>
+                    <input type="file" id="improvement-photo-input" multiple accept="image/*" style="display: none;" onchange="handleImprovementPhotoUpload(event)">
+                    <div id="improvement-photo-preview" style="margin-top: 15px; display: flex; gap: 15px; flex-wrap: wrap; max-width: 100%;"></div>
                 </div>
 
                 <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 30px;">
                     <button type="submit" class="btn" style="background: linear-gradient(45deg, #28a745, #20c997); padding: 15px 30px; font-size: 1.1rem;">
                         ✅ Save Improvement
                     </button>
-                    <button type="button" class="btn" onclick="clearUpdateForm()" style="background: linear-gradient(45deg, #6c757d, #495057);">
+                    <button type="button" class="btn" onclick="saveImprovementAsDraft()" style="background: linear-gradient(45deg, #6c757d, #495057);">
+                        📝 Save as Draft
+                    </button>
+                    <button type="button" class="btn" onclick="loadImprovementDraft()" style="background: linear-gradient(45deg, #17a2b8, #138496);">
+                        📋 Load Draft
+                    </button>
+                    <button type="button" class="btn" onclick="clearImprovementForm()" style="background: linear-gradient(45deg, #dc3545, #c82333);">
                         🗑️ Clear Form
                     </button>
                 </div>
@@ -1925,11 +1937,11 @@
                 try {
                     if (staffData) {
                         await db.collection('users').doc(currentUser.uid).collection('staffWarnings').doc(staffKey).set(staffData);
-                    } else {
+                                    } else {
                         // Remove from Firebase if count is 0
                         await db.collection('users').doc(currentUser.uid).collection('staffWarnings').doc(staffKey).delete();
                     }
-                } catch (error) {
+                                                } catch (error) {
                     console.error('Error saving staff warning to Firebase:', error);
                     // Add to pending queue for later sync
                     pendingStaffWarnings.push({
@@ -2331,7 +2343,7 @@
                 alert('❌ Please sign in to refresh warning levels');
                 return;
             }
-            
+
             const confirmMessage = `This will recalculate warning levels for all staff members based on their current incident counts.\n\nThis ensures all warning levels are accurate and up-to-date.\n\nContinue?`;
             
             if (confirm(confirmMessage)) {
@@ -2885,6 +2897,35 @@
             return space;
         }
 
+        // Helper function to calculate space needed for an update
+        function calculateUpdateSpace(update, doc) {
+            let space = 0;
+            
+            // Header space
+            space += 16; // Same as records for consistency
+            
+            // Update details space
+            space += 12; // Same as records for consistency
+            
+            // Description space
+            const descriptionLines = doc.splitTextToSize(update.description, 170);
+            space += 8 + (descriptionLines.length * 4) + 8; // Same spacing as records
+            
+            // Photos space
+            if (update.photos && update.photos.length > 0) {
+                space += 12; // Header
+                const photosPerRow = 3;
+                const photoHeight = 35; // Same as records
+                const totalRows = Math.ceil(update.photos.length / photosPerRow);
+                space += (totalRows * (photoHeight + 12)) + 10; // Same spacing as records
+            }
+            
+            // Separator space
+            space += 15; // Same as records for consistency
+            
+            return space;
+        }
+
         // PDF Export Functions
         async function exportToPDF() {
             if (!currentUser) {
@@ -2959,274 +3000,382 @@
                 thisMonth.setDate(1);
                 const thisMonthRecords = records.filter(r => new Date(r.date) >= thisMonth);
                 const highPriorityRecords = records.filter(r => r.priority === 'high');
-                const recordsWithPhotos = records.filter(r => r.photos.length > 0);
-                const thisMonthUpdates = updates.filter(u => new Date(u.date) >= thisMonth);
-                const highImpactUpdates = updates.filter(u => u.impact === 'high');
+                const improvements = records.filter(r => r.category === 'improvement');
+                const regularRecords = records.filter(r => r.category !== 'improvement');
                 
                 doc.text(`This Month: ${thisMonthRecords.length}`, 120, 58);
                 doc.text(`High Priority: ${highPriorityRecords.length}`, 120, 63);
-                doc.text(`With Photos: ${recordsWithPhotos.length}`, 120, 68);
-                
-                // Add updates statistics on a new line
-                doc.text(`Updates: ${updates.length}`, 20, 73);
-                doc.text(`This Month Updates: ${thisMonthUpdates.length}`, 120, 73);
+                doc.text(`Improvements: ${improvements.length}`, 120, 68);
                 
                 let yPosition = 90; // Start a bit lower to ensure proper spacing
                 let pageNumber = 1;
                 
-                for (let i = 0; i < records.length; i++) {
-                    const record = records[i];
-                    
-                    // Calculate estimated space needed for this record
-                    const estimatedSpace = calculateRecordSpace(record, doc);
-                    
-                                // Check if we need a new page - ensure each record fits nicely on one page
-            if (yPosition + estimatedSpace > 240) {
-                        doc.addPage();
-                        pageNumber++;
-                        yPosition = 20;
-                        
-                        // Add page header for subsequent pages
-                        doc.setFillColor(102, 126, 234);
-                        doc.rect(0, 0, 210, 25, 'F');
-                        doc.setTextColor(255, 255, 255);
-                        doc.setFontSize(16);
-                        doc.setFont(undefined, 'bold');
-                        doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
-                        doc.setFontSize(10);
-                        doc.setFont(undefined, 'normal');
-                        doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
-                        yPosition = 40; // Start new pages a bit lower for better spacing
-                    }
-                    
-                    // --- Draw border around record ---
-                    const recordTop = yPosition - 3;
-                    let recordHeight = estimatedSpace + 6; // Add extra space for padding
-                    doc.setDrawColor(225, 232, 237); // #e1e8ed
-                    doc.setLineWidth(0.8);
-                    doc.roundedRect(12, recordTop, 186, recordHeight, 6, 6, 'S');
-                    let innerX = 18; // for padding
-                    let contentWidth = 174;
-                    let sectionY = yPosition + 4; // Add more top padding to stay inside border
-
-                    // --- Record header (category, number, priority) ---
-                    // Enhanced record header with category color - more compact
-                    const categoryColors = {
-                        'food-safety': [255, 107, 107],
-                        'health-safety': [78, 205, 196],
-                        'cleaning': [69, 183, 73],
-                        'training': [247, 147, 30],
-                        'equipment': [155, 89, 182]
-                    };
-                    
-                    const categoryColor = categoryColors[record.category] || [102, 126, 234];
-                    doc.setFillColor(categoryColor[0], categoryColor[1], categoryColor[2], 0.15);
-                    doc.rect(innerX, sectionY - 4, contentWidth, 8, 'F');
-                    doc.setDrawColor(categoryColor[0], categoryColor[1], categoryColor[2]);
+                console.log('Total records:', records.length);
+                console.log('Improvements:', improvements.length);
+                console.log('Regular records:', regularRecords.length);
+                console.log('All records categories:', records.map(r => r.category));
+                console.log('Improvement records:', improvements);
+                
+                // Show improvements first at the top
+                if (improvements.length > 0) {
+                    // Add improvements section header
+                    doc.setFillColor(40, 167, 69, 0.1); // Green background
+                    doc.rect(12, yPosition - 3, 186, 15, 'F');
+                    doc.setDrawColor(40, 167, 69);
                     doc.setLineWidth(0.5);
-                    doc.rect(innerX, sectionY - 4, contentWidth, 8, 'S');
+                    doc.rect(12, yPosition - 3, 186, 15, 'S');
                     
-                    // Record number and category - more compact
-                    doc.setTextColor(categoryColor[0], categoryColor[1], categoryColor[2]);
-                    doc.setFontSize(12);
+                    doc.setTextColor(40, 167, 69);
+                    doc.setFontSize(14);
                     doc.setFont(undefined, 'bold');
-                    doc.text(`Record ${i + 1}`, innerX + 2, sectionY);
+                    doc.text('IMPROVEMENTS & POSITIVE CHANGES', 105, yPosition + 5, { align: 'center' });
                     
-                    doc.setFontSize(9);
-                    doc.setFont(undefined, 'normal');
-                    doc.text(`${getCategoryName(record.category)}`, innerX + 62, sectionY);
+                    yPosition += 25; // Add space after header
                     
-                    // Priority badge - more prominent and colored
-                    const priorityColors = {
-                        'low': [255, 193, 7],      // yellow
-                        'medium': [255, 140, 0],  // orange
-                        'high': [220, 53, 69]     // red
-                    };
-                    const priorityColor = priorityColors[record.priority] || [108, 117, 125];
-                    doc.setFontSize(10);
-                    doc.setFont(undefined, 'bold');
-                    doc.setTextColor(priorityColor[0], priorityColor[1], priorityColor[2]);
-                    doc.text(record.priority.toUpperCase(), innerX + contentWidth - 10, sectionY, { align: 'center' });
-                    doc.setTextColor(44, 62, 80); // reset for rest
-                    sectionY += 12;
-                    
-                    // --- Record details (date, staff, location) ---
-                    // Left column
-                    doc.setFont(undefined, 'bold');
-                    doc.text('Date:', innerX, sectionY);
-                    doc.setFont(undefined, 'normal');
-                    doc.text(formatDate(record.date), innerX + 25, sectionY);
-                    doc.setFont(undefined, 'bold');
-                    doc.text('Staff:', innerX, sectionY + 5);
-                    doc.setFont(undefined, 'normal');
-                    doc.text(record.staffMember, innerX + 25, sectionY + 5);
-                    // Right column
-                    doc.setFont(undefined, 'bold');
-                    doc.text('Location:', innerX + 100, sectionY);
-                    doc.setFont(undefined, 'normal');
-                    doc.text(record.location, innerX + 125, sectionY);
-                    sectionY += 10;
-                    
-                    // --- Description section ---
-                    doc.setFillColor(247, 250, 253); // #f7fafd
-                    const descriptionLines = doc.splitTextToSize(record.description, 170);
-                    const descHeight = 12 + descriptionLines.length * 4;
-                    doc.roundedRect(innerX, sectionY - 1, contentWidth, descHeight, 3, 3, 'F');
-                    doc.setDrawColor(102, 126, 234, 0.2);
-                    doc.setLineWidth(0.3);
-                    doc.roundedRect(innerX, sectionY - 1, contentWidth, descHeight, 3, 3, 'S');
-                    doc.setFont(undefined, 'bold');
-                    doc.setTextColor(102, 126, 234);
-                    doc.setFontSize(10);
-                    doc.text('Description:', innerX + 5, sectionY + 5);
-                    sectionY += 12;
-                    doc.setFont(undefined, 'normal');
-                    doc.setTextColor(44, 62, 80);
-                    doc.setFontSize(9);
-                    doc.text(descriptionLines, innerX + 5, sectionY + 2);
-                    sectionY += descriptionLines.length * 4 + 8;
-                    
-                    // --- Attachments section ---
-                    if (record.photos && record.photos.length > 0) {
-                        doc.setFillColor(249, 249, 251); // #f9f9fb
-                        const attachHeight = 20 + (Math.ceil(record.photos.length / 3) * 47);
-                        doc.roundedRect(innerX, sectionY - 1, contentWidth, attachHeight, 3, 3, 'F');
-                        doc.setDrawColor(102, 126, 234, 0.2);
-                        doc.setLineWidth(0.3);
-                        doc.roundedRect(innerX, sectionY - 1, contentWidth, attachHeight, 3, 3, 'S');
-                        doc.setFont(undefined, 'bold');
-                        doc.setTextColor(102, 126, 234);
-                        doc.setFontSize(10);
-                        doc.text(`Attachments (${record.photos.length})`, innerX + 5, sectionY + 5);
-                        sectionY += 12;
-                        // ... photo grid as before, but use innerX for X ...
-                        // ... update sectionY after photos ...
-                        // Calculate photos per row (3 photos per row for better visibility)
-                        const photosPerRow = 3;
-                        const photoWidth = 50;
-                        const photoHeight = 35; // Increased height for better visibility
-                        const photoSpacing = 10; // Increased spacing for better separation
+                    for (let i = 0; i < improvements.length; i++) {
+                        const record = improvements[i];
                         
-                        for (let j = 0; j < record.photos.length; j++) {
-                            const photo = record.photos[j];
-                            const row = Math.floor(j / photosPerRow);
-                            const col = j % photosPerRow;
-                            const photoX = innerX + (col * (photoWidth + photoSpacing));
-                            const photoY = sectionY + (row * (photoHeight + 12)); // Better row spacing
+                        // Calculate estimated space needed for this record
+                        const estimatedSpace = calculateRecordSpace(record, doc);
+                        
+                        // Check if we need a new page - ensure each record fits nicely on one page
+                        if (yPosition + estimatedSpace > 240) {
+                            doc.addPage();
+                            pageNumber++;
+                            yPosition = 20;
                             
-                            // Check if we need a new page - ensure photos fit on same page as record
-                            if (photoY > 200) {
-                                doc.addPage();
-                                pageNumber++;
-                                yPosition = 20;
-                                
-                                // Add page header
-                                doc.setFillColor(102, 126, 234);
-                                doc.rect(0, 0, 210, 25, 'F');
-                                doc.setTextColor(255, 255, 255);
-                                doc.setFontSize(16);
-                                doc.setFont(undefined, 'bold');
-                                doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
-                                doc.setFontSize(10);
-                                doc.setFont(undefined, 'normal');
-                                doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
-                                yPosition = 40; // Start new pages a bit lower for better spacing
-                                continue;
-                            }
+                            // Add page header for subsequent pages
+                            doc.setFillColor(40, 167, 69);
+                            doc.rect(0, 0, 210, 25, 'F');
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFontSize(16);
+                            doc.setFont(undefined, 'bold');
+                            doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
+                            doc.setFontSize(10);
+                            doc.setFont(undefined, 'normal');
+                            doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
+                            yPosition = 40; // Start new pages a bit lower for better spacing
+                        }
+                        
+                        // --- Draw border around record ---
+                        const recordTop = yPosition - 3;
+                        let recordHeight = estimatedSpace + 6; // Add extra space for padding
+                        doc.setDrawColor(40, 167, 69); // Green border for improvements
+                        doc.setLineWidth(0.8);
+                        doc.roundedRect(12, recordTop, 186, recordHeight, 6, 6, 'S');
+                        let innerX = 18; // for padding
+                        let contentWidth = 174;
+                        let sectionY = yPosition + 4; // Add more top padding to stay inside border
+
+                        // --- Record header (category, number, priority) ---
+                        // Enhanced record header with category color - more compact
+                        doc.setFillColor(40, 167, 69, 0.15);
+                        doc.rect(innerX, sectionY - 4, contentWidth, 8, 'F');
+                        doc.setDrawColor(40, 167, 69);
+                        doc.setLineWidth(0.5);
+                        doc.rect(innerX, sectionY - 4, contentWidth, 8, 'S');
+                        
+                        // Record number and category - more compact
+                        doc.setTextColor(40, 167, 69);
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(`Improvement ${i + 1}`, innerX + 2, sectionY);
+                        
+                        doc.setFontSize(9);
+                        doc.setFont(undefined, 'normal');
+                        doc.text('Improvement Made', innerX + 62, sectionY);
+                        
+                        // Priority badge - more prominent and colored
+                        const priorityColors = {
+                            'low': [255, 193, 7],      // yellow
+                            'medium': [255, 140, 0],  // orange
+                            'high': [220, 53, 69]     // red
+                        };
+                        const priorityColor = priorityColors[record.priority] || [108, 117, 125];
+                        doc.setFontSize(10);
+                        doc.setFont(undefined, 'bold');
+                        doc.setTextColor(priorityColor[0], priorityColor[1], priorityColor[2]);
+                        doc.text(record.priority.toUpperCase(), innerX + contentWidth - 10, sectionY, { align: 'center' });
+                        doc.setTextColor(44, 62, 80); // reset for rest
+                        sectionY += 12;
+                        
+                        // --- Record details (date, staff, location) ---
+                        // Left column
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Date:', innerX, sectionY);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(formatDate(record.date), innerX + 25, sectionY);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Staff:', innerX + 85, sectionY);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(record.staffMember, innerX + 110, sectionY);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Location:', innerX, sectionY + 6);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(record.location, innerX + 35, sectionY + 6);
+                        sectionY += 18;
+                        
+                        // Description
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Description:', innerX, sectionY);
+                        sectionY += 4;
+                        doc.setFont(undefined, 'normal');
+                        doc.setFontSize(9);
+                        const descriptionLines = doc.splitTextToSize(record.description, 170);
+                        doc.text(descriptionLines, innerX, sectionY);
+                        sectionY += (descriptionLines.length * 4) + 8;
+                        
+                        // Photos
+                        if (record.photos && record.photos.length > 0) {
+                            doc.setFont(undefined, 'bold');
+                            doc.setFontSize(9);
+                            doc.text('Photos:', innerX, sectionY);
+                            sectionY += 4;
                             
-                            if (photo.isRaw) {
-                                // Enhanced RAW file placeholder - more compact
-                                doc.setFillColor(102, 126, 234, 0.1);
-                                doc.rect(photoX, photoY, photoWidth, photoHeight, 'F');
-                                doc.setDrawColor(102, 126, 234);
-                                doc.setLineWidth(0.5);
-                                doc.rect(photoX, photoY, photoWidth, photoHeight, 'S');
+                            const photosPerRow = 3;
+                            const photoWidth = 50;
+                            const photoHeight = 35;
+                            const photoSpacing = 10;
+                            
+                            for (let j = 0; j < record.photos.length; j += photosPerRow) {
+                                const rowPhotos = record.photos.slice(j, j + photosPerRow);
                                 
-                                doc.setTextColor(102, 126, 234);
-                                doc.setFontSize(8);
-                                doc.setFont(undefined, 'bold');
-                                doc.text('RAW', photoX + photoWidth/2, photoY + 15, { align: 'center' });
-                                doc.setFont(undefined, 'normal');
-                                doc.setFontSize(7);
-                                doc.text(photo.name.split('.').pop().toUpperCase(), photoX + photoWidth/2, photoY + 25, { align: 'center' });
-                                doc.setFontSize(6);
-                                const displayName = photo.name.length > 15 ? photo.name.substring(0, 15) + '...' : photo.name;
-                                doc.text(displayName, photoX + photoWidth/2, photoY + 32, { align: 'center' });
-                            } else {
-                                try {
-                                    // Improved image handling for PDF
-                                    const img = new Image();
-                                    img.crossOrigin = 'anonymous';
+                                for (let k = 0; k < rowPhotos.length; k++) {
+                                    const photo = rowPhotos[k];
+                                    const photoX = innerX + (k * (photoWidth + photoSpacing));
                                     
-                                    await new Promise((resolve, reject) => {
-                                        img.onload = resolve;
-                                        img.onerror = reject;
-                                        img.src = photo.data;
-                                    });
-                                    
-                                    // Create canvas with proper dimensions for better quality
-                                    const canvas = document.createElement('canvas');
-                                    const ctx = canvas.getContext('2d');
-                                    
-                                    // Set canvas size to original image dimensions for best quality
-                                    canvas.width = img.width;
-                                    canvas.height = img.height;
-                                    
-                                    // Draw image at full resolution
-                                    ctx.drawImage(img, 0, 0);
-                                    
-                                    // Convert to data URL with maximum quality
-                                    const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                                    
-                                    // Add image to PDF
-                                    doc.addImage(imgData, 'JPEG', photoX, photoY, photoWidth, photoHeight);
-                                    
-                                    // Add border around image
-                                    doc.setDrawColor(102, 126, 234);
-                                    doc.setLineWidth(0.3);
-                                    doc.rect(photoX, photoY, photoWidth, photoHeight, 'S');
-                                    
-                                    // Add filename below image with better styling
-                                    doc.setTextColor(44, 62, 80);
-                                    doc.setFontSize(7);
-                                    const displayName = photo.name.length > 15 ? photo.name.substring(0, 15) + '...' : photo.name;
-                                    doc.text(displayName, photoX + photoWidth/2, photoY + photoHeight + 6, { align: 'center' });
-                                    
-                                } catch (error) {
-                                    console.error('Error adding image to PDF:', error);
-                                    // Show error placeholder
-                                    doc.setFillColor(220, 53, 69, 0.1);
-                                    doc.rect(photoX, photoY, photoWidth, photoHeight, 'F');
-                                    doc.setDrawColor(220, 53, 69);
-                                    doc.setLineWidth(0.5);
-                                    doc.rect(photoX, photoY, photoWidth, photoHeight, 'S');
-                                    doc.setTextColor(220, 53, 69);
-                                    doc.setFontSize(6);
-                                    doc.text('Image Error', photoX + photoWidth/2, photoY + photoHeight/2, { align: 'center' });
-                                    doc.text(photo.name.substring(0, 10) + '...', photoX + photoWidth/2, photoY + photoHeight + 4, { align: 'center' });
+                                    try {
+                                        if (photo.isRaw) {
+                                            // Placeholder for RAW files
+                                            doc.setFillColor(40, 167, 69);
+                                            doc.rect(photoX, sectionY, photoWidth, photoHeight, 'F');
+                                            doc.setTextColor(255, 255, 255);
+                                            doc.setFontSize(8);
+                                            doc.text('RAW', photoX + photoWidth/2, sectionY + photoHeight/2, { align: 'center' });
+                                        } else {
+                                            const img = new Image();
+                                            img.src = photo.data;
+                                            await new Promise((resolve) => {
+                                                img.onload = () => {
+                                                    try {
+                                                        const canvas = document.createElement('canvas');
+                                                        canvas.width = photoWidth * 2;
+                                                        canvas.height = photoHeight * 2;
+                                                        const ctx = canvas.getContext('2d');
+                                                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                                        const imgData = canvas.toDataURL('image/jpeg', 0.8);
+                                                        doc.addImage(imgData, 'JPEG', photoX, sectionY, photoWidth, photoHeight);
+                                                    } catch (error) {
+                                                        console.error('Error adding photo to PDF:', error);
+                                                    }
+                                                    resolve();
+                                                };
+                                                img.onerror = resolve;
+                                            });
+                                        }
+                                    } catch (error) {
+                                        console.error('Error processing photo:', error);
+                                    }
                                 }
+                                sectionY += photoHeight + 8;
                             }
                         }
                         
-                        // Update yPosition based on the last photo row - better spacing
-                        const totalRows = Math.ceil(record.photos.length / photosPerRow);
-                        sectionY += (totalRows * (photoHeight + 12)) + 10; // Better spacing
+                        yPosition = sectionY + 15;
                     }
                     
-                    // Add separator line between records - more appealing
-                    doc.setDrawColor(102, 126, 234, 0.2);
-                    doc.setLineWidth(0.5);
-                    doc.line(innerX, sectionY + 2, innerX + contentWidth, sectionY + 2);
-                    sectionY += 15;
-                    
-                    // Update main yPosition for next record
-                    yPosition = sectionY;
-                    
-                    // Add page number at bottom
-                    doc.setFontSize(8);
-                    doc.setTextColor(128, 128, 128);
-                    doc.text(`Page ${pageNumber}`, 105, 285, { align: 'center' });
+                    // Add separator after improvements
+                    yPosition += 20;
+                    doc.setDrawColor(40, 167, 69);
+                    doc.setLineWidth(2);
+                    doc.line(12, yPosition, 198, yPosition);
+                    yPosition += 25;
                 }
+                
+                // Now show regular records
+                if (regularRecords.length > 0) {
+                    // Add regular records section header
+                    doc.setFillColor(102, 126, 234, 0.1); // Blue background
+                    doc.rect(12, yPosition - 3, 186, 15, 'F');
+                    doc.setDrawColor(102, 126, 234);
+                    doc.setLineWidth(0.5);
+                    doc.rect(12, yPosition - 3, 186, 15, 'S');
+                    
+                    doc.setTextColor(102, 126, 234);
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('COMPLIANCE RECORDS & INCIDENTS', 105, yPosition + 5, { align: 'center' });
+                    
+                    yPosition += 25; // Add space after header
+                    
+                    for (let i = 0; i < regularRecords.length; i++) {
+                        const record = regularRecords[i];
+                        
+                        // Calculate estimated space needed for this record
+                        const estimatedSpace = calculateRecordSpace(record, doc);
+                        
+                        // Check if we need a new page - ensure each record fits nicely on one page
+                        if (yPosition + estimatedSpace > 240) {
+                            doc.addPage();
+                            pageNumber++;
+                            yPosition = 20;
+                            
+                            // Add page header for subsequent pages
+                            doc.setFillColor(102, 126, 234);
+                            doc.rect(0, 0, 210, 25, 'F');
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFontSize(16);
+                            doc.setFont(undefined, 'bold');
+                            doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
+                            doc.setFontSize(10);
+                            doc.setFont(undefined, 'normal');
+                            doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
+                            yPosition = 40; // Start new pages a bit lower for better spacing
+                        }
+                        
+                        // --- Draw border around record ---
+                        const recordTop = yPosition - 3;
+                        let recordHeight = estimatedSpace + 6; // Add extra space for padding
+                        doc.setDrawColor(225, 232, 237); // #e1e8ed
+                        doc.setLineWidth(0.8);
+                        doc.roundedRect(12, recordTop, 186, recordHeight, 6, 6, 'S');
+                        let innerX = 18; // for padding
+                        let contentWidth = 174;
+                        let sectionY = yPosition + 4; // Add more top padding to stay inside border
+
+                        // --- Record header (category, number, priority) ---
+                        // Enhanced record header with category color - more compact
+                        const categoryColors = {
+                            'food-safety': [255, 107, 107],
+                            'health-safety': [78, 205, 196],
+                            'cleaning': [69, 183, 73],
+                            'training': [247, 147, 30],
+                            'equipment': [155, 89, 182]
+                        };
+                        
+                        const categoryColor = categoryColors[record.category] || [102, 126, 234];
+                        doc.setFillColor(categoryColor[0], categoryColor[1], categoryColor[2], 0.15);
+                        doc.rect(innerX, sectionY - 4, contentWidth, 8, 'F');
+                        doc.setDrawColor(categoryColor[0], categoryColor[1], categoryColor[2]);
+                        doc.setLineWidth(0.5);
+                        doc.rect(innerX, sectionY - 4, contentWidth, 8, 'S');
+                        
+                        // Record number and category - more compact
+                        doc.setTextColor(categoryColor[0], categoryColor[1], categoryColor[2]);
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(`Record ${i + 1}`, innerX + 2, sectionY);
+                        
+                        doc.setFontSize(9);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(`${getCategoryName(record.category)}`, innerX + 62, sectionY);
+                        
+                        // Priority badge - more prominent and colored
+                        const priorityColors = {
+                            'low': [255, 193, 7],      // yellow
+                            'medium': [255, 140, 0],  // orange
+                            'high': [220, 53, 69]     // red
+                        };
+                        const priorityColor = priorityColors[record.priority] || [108, 117, 125];
+                        doc.setFontSize(10);
+                        doc.setFont(undefined, 'bold');
+                        doc.setTextColor(priorityColor[0], priorityColor[1], priorityColor[2]);
+                        doc.text(record.priority.toUpperCase(), innerX + contentWidth - 10, sectionY, { align: 'center' });
+                        doc.setTextColor(44, 62, 80); // reset for rest
+                        sectionY += 12;
+                        
+                        // --- Record details (date, staff, location) ---
+                        // Left column
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Date:', innerX, sectionY);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(formatDate(record.date), innerX + 25, sectionY);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Staff:', innerX + 85, sectionY);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(record.staffMember, innerX + 110, sectionY);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Location:', innerX, sectionY + 6);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(record.location, innerX + 35, sectionY + 6);
+                        sectionY += 18;
+                        
+                        // Description
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Description:', innerX, sectionY);
+                        sectionY += 4;
+                        doc.setFont(undefined, 'normal');
+                        doc.setFontSize(9);
+                        const descriptionLines = doc.splitTextToSize(record.description, 170);
+                        doc.text(descriptionLines, innerX, sectionY);
+                        sectionY += (descriptionLines.length * 4) + 8;
+                        
+                        // Photos
+                        if (record.photos && record.photos.length > 0) {
+                            doc.setFont(undefined, 'bold');
+                            doc.setFontSize(9);
+                            doc.text('Photos:', innerX, sectionY);
+                            sectionY += 4;
+                            
+                            const photosPerRow = 3;
+                            const photoWidth = 50;
+                            const photoHeight = 35;
+                            const photoSpacing = 10;
+                            
+                            for (let j = 0; j < record.photos.length; j += photosPerRow) {
+                                const rowPhotos = record.photos.slice(j, j + photosPerRow);
+                                
+                                for (let k = 0; k < rowPhotos.length; k++) {
+                                    const photo = rowPhotos[k];
+                                    const photoX = innerX + (k * (photoWidth + photoSpacing));
+                                    
+                                    try {
+                                        if (photo.isRaw) {
+                                            // Placeholder for RAW files
+                                            doc.setFillColor(102, 126, 234);
+                                            doc.rect(photoX, sectionY, photoWidth, photoHeight, 'F');
+                                            doc.setTextColor(255, 255, 255);
+                                            doc.setFontSize(8);
+                                            doc.text('RAW', photoX + photoWidth/2, sectionY + photoHeight/2, { align: 'center' });
+                                        } else {
+                                            const img = new Image();
+                                            img.src = photo.data;
+                                            await new Promise((resolve) => {
+                                                img.onload = () => {
+                                                    try {
+                                                        const canvas = document.createElement('canvas');
+                                                        canvas.width = photoWidth * 2;
+                                                        canvas.height = photoHeight * 2;
+                                                        const ctx = canvas.getContext('2d');
+                                                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                                        const imgData = canvas.toDataURL('image/jpeg', 0.8);
+                                                        doc.addImage(imgData, 'JPEG', photoX, sectionY, photoWidth, photoHeight);
+                                                    } catch (error) {
+                                                        console.error('Error adding photo to PDF:', error);
+                                                    }
+                                                    resolve();
+                                                };
+                                                img.onerror = resolve;
+                                            });
+                                        }
+                                    } catch (error) {
+                                        console.error('Error processing photo:', error);
+                                    }
+                                }
+                                sectionY += photoHeight + 8;
+                            }
+                        }
+                        
+                        yPosition = sectionY + 15;
+                }
+                
+                }
+                
+                // Add separator line after improvements
+                doc.setDrawColor(40, 167, 69, 0.2);
+                doc.setLineWidth(0.5);
+                doc.line(12, yPosition + 2, 198, yPosition + 2);
+                yPosition += 15;
                 
                 // Add Staff Warnings Section
                 const staffWithWarnings = Object.values(staffWarnings).filter(staff => staff.count > 0);
@@ -3354,26 +3503,25 @@
                 
                 // Add Updates & Improvements Section
                 if (updates && updates.length > 0) {
-                    // Check if we need a new page for updates section
-                    if (yPosition > 200) {
-                        doc.addPage();
-                        pageNumber++;
-                        yPosition = 40;
-                        
-                        // Add page header
-                        doc.setFillColor(102, 126, 234);
-                        doc.rect(0, 0, 210, 25, 'F');
-                        doc.setTextColor(255, 255, 255);
-                        doc.setFontSize(16);
-                        doc.setFont(undefined, 'bold');
-                        doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
-                        doc.setFontSize(10);
-                        doc.setFont(undefined, 'normal');
-                        doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
-                    }
+                    // Always start updates on a new page for better organization
+                    doc.addPage();
+                    pageNumber++;
+                    yPosition = 20;
+                    
+                    // Add page header
+                    doc.setFillColor(102, 126, 234);
+                    doc.rect(0, 0, 210, 25, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(16);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'normal');
+                    doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
+                    yPosition = 40;
                     
                     // Updates section header
-                    doc.setFillColor(40, 167, 69);
+                    doc.setFillColor(40, 167, 69, 0.1);
                     doc.rect(15, yPosition - 5, 180, 15, 'F');
                     doc.setDrawColor(40, 167, 69);
                     doc.setLineWidth(0.5);
@@ -3388,36 +3536,20 @@
                     // Sort updates by date (newest first)
                     const sortedUpdates = [...updates].sort((a, b) => new Date(b.date) - new Date(a.date));
                     
-                    // Updates table
-                    let updateTableY = yPosition;
-                    const updateTableX = 20;
-                    const updateColWidths = [50, 40, 50, 60]; // Type, Impact, Staff, Date
-                    
-                    // Table header
-                    doc.setFillColor(248, 249, 250);
-                    doc.rect(updateTableX, updateTableY - 3, 160, 10, 'F');
-                    doc.setDrawColor(40, 167, 69);
-                    doc.setLineWidth(0.3);
-                    doc.rect(updateTableX, updateTableY - 3, 160, 10, 'S');
-                    
-                    doc.setTextColor(44, 62, 80);
-                    doc.setFontSize(9);
-                    doc.setFont(undefined, 'bold');
-                    doc.text('Type', updateTableX + 2, updateTableY + 2);
-                    doc.text('Impact', updateTableX + 55, updateTableY + 2);
-                    doc.text('Staff', updateTableX + 100, updateTableY + 2);
-                    doc.text('Date', updateTableX + 145, updateTableY + 2);
-                    updateTableY += 12;
-                    
-                    // Table rows
-                    sortedUpdates.forEach((update, index) => {
+                    // Process each update like a record
+                    for (let i = 0; i < sortedUpdates.length; i++) {
+                        const update = sortedUpdates[i];
+                        
+                        // Calculate estimated space needed for this update
+                        const estimatedSpace = calculateUpdateSpace(update, doc);
+                        
                         // Check if we need a new page
-                        if (updateTableY > 250) {
+                        if (yPosition + estimatedSpace > 240) {
                             doc.addPage();
                             pageNumber++;
-                            updateTableY = 40;
+                            yPosition = 20;
                             
-                            // Add page header
+                            // Add page header for subsequent pages
                             doc.setFillColor(102, 126, 234);
                             doc.rect(0, 0, 210, 25, 'F');
                             doc.setTextColor(255, 255, 255);
@@ -3427,56 +3559,215 @@
                             doc.setFontSize(10);
                             doc.setFont(undefined, 'normal');
                             doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
+                            yPosition = 40;
                         }
                         
-                        // Row background (alternating colors)
-                        const rowColor = index % 2 === 0 ? [255, 255, 255] : [248, 249, 250];
-                        doc.setFillColor(rowColor[0], rowColor[1], rowColor[2]);
-                        doc.rect(updateTableX, updateTableY - 2, 160, 8, 'F');
+                        // --- Draw border around update ---
+                        const updateTop = yPosition - 3;
+                        let updateHeight = estimatedSpace + 6;
                         doc.setDrawColor(225, 232, 237);
-                        doc.setLineWidth(0.2);
-                        doc.rect(updateTableX, updateTableY - 2, 160, 8, 'S');
+                        doc.setLineWidth(0.8);
+                        doc.roundedRect(12, updateTop, 186, updateHeight, 6, 6, 'S');
+                        let innerX = 18;
+                        let contentWidth = 174;
+                        let sectionY = yPosition + 4;
+
+                        // --- Update header (category, number, impact) ---
+                        const updateCategoryColors = {
+                            'new-sign': [40, 167, 69],
+                            'procedure-update': [23, 162, 184],
+                            'equipment-improvement': [111, 66, 193],
+                            'training-completed': [253, 126, 20],
+                            'cleaning-improvement': [69, 183, 73],
+                            'general-improvement': [102, 126, 234]
+                        };
                         
-                        // Update type
-                        doc.setTextColor(44, 62, 80);
-                        doc.setFontSize(8);
+                        const updateCategoryColor = updateCategoryColors[update.category] || [102, 126, 234];
+                        doc.setFillColor(updateCategoryColor[0], updateCategoryColor[1], updateCategoryColor[2], 0.15);
+                        doc.rect(innerX, sectionY - 4, contentWidth, 8, 'F');
+                        doc.setDrawColor(updateCategoryColor[0], updateCategoryColor[1], updateCategoryColor[2]);
+                        doc.setLineWidth(0.5);
+                        doc.rect(innerX, sectionY - 4, contentWidth, 8, 'S');
+                        
+                        // Update number and category
+                        doc.setTextColor(updateCategoryColor[0], updateCategoryColor[1], updateCategoryColor[2]);
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(`Improvement ${i + 1}`, innerX + 2, sectionY);
+                        
+                        doc.setFontSize(9);
                         doc.setFont(undefined, 'normal');
-                        const displayType = getUpdateCategoryName(update.category).length > 12 ? 
-                            getUpdateCategoryName(update.category).substring(0, 12) + '...' : 
-                            getUpdateCategoryName(update.category);
-                        doc.text(displayType, updateTableX + 2, updateTableY + 2);
+                        doc.text(`${getUpdateCategoryName(update.category)}`, innerX + 62, sectionY);
                         
-                        // Impact level with color
+                        // Impact badge
                         const impactColors = {
                             'low': [40, 167, 69],
                             'medium': [255, 193, 7],
                             'high': [220, 53, 69]
                         };
                         const impactColor = impactColors[update.impact] || [108, 117, 125];
-                        doc.setTextColor(impactColor[0], impactColor[1], impactColor[2]);
+                        doc.setFontSize(10);
                         doc.setFont(undefined, 'bold');
-                        doc.text(update.impact.toUpperCase(), updateTableX + 55, updateTableY + 2);
-                        
-                        // Staff member
+                        doc.setTextColor(impactColor[0], impactColor[1], impactColor[2]);
+                        doc.text(update.impact.toUpperCase(), innerX + contentWidth - 10, sectionY, { align: 'center' });
                         doc.setTextColor(44, 62, 80);
+                        sectionY += 12;
+                        
+                        // --- Update details (date, staff, location) ---
+                        // Left column
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Date:', innerX, sectionY);
                         doc.setFont(undefined, 'normal');
-                        const displayStaff = update.staffMember && update.staffMember.length > 10 ? 
-                            update.staffMember.substring(0, 10) + '...' : 
-                            (update.staffMember || 'N/A');
-                        doc.text(displayStaff, updateTableX + 100, updateTableY + 2);
+                        doc.text(formatDate(update.date), innerX + 25, sectionY);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Staff:', innerX, sectionY + 5);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(update.staffMember || 'N/A', innerX + 25, sectionY + 5);
+                        // Right column
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Location:', innerX + 100, sectionY);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(update.location || 'N/A', innerX + 125, sectionY);
+                        sectionY += 10;
                         
-                        // Date
-                        const updateDate = new Date(update.date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                        });
-                        doc.text(updateDate, updateTableX + 145, updateTableY + 2);
+                        // --- Description section ---
+                        doc.setFillColor(247, 250, 253);
+                        const descriptionLines = doc.splitTextToSize(update.description, 170);
+                        const descHeight = 12 + descriptionLines.length * 4;
+                        doc.roundedRect(innerX, sectionY - 1, contentWidth, descHeight, 3, 3, 'F');
+                        doc.setDrawColor(40, 167, 69, 0.2);
+                        doc.setLineWidth(0.3);
+                        doc.roundedRect(innerX, sectionY - 1, contentWidth, descHeight, 3, 3, 'S');
+                        doc.setFont(undefined, 'bold');
+                        doc.setTextColor(40, 167, 69);
+                        doc.setFontSize(10);
+                        doc.text('Description:', innerX + 5, sectionY + 5);
+                        sectionY += 12;
+                        doc.setFont(undefined, 'normal');
+                        doc.setTextColor(44, 62, 80);
+                        doc.setFontSize(9);
+                        doc.text(descriptionLines, innerX + 5, sectionY + 2);
+                        sectionY += descriptionLines.length * 4 + 8;
                         
-                        updateTableY += 10;
-                    });
-                    
-                    yPosition = updateTableY + 10;
+                        // --- Attachments section for updates ---
+                        if (update.photos && update.photos.length > 0) {
+                            doc.setFillColor(249, 249, 251);
+                            const attachHeight = 20 + (Math.ceil(update.photos.length / 3) * 47);
+                            doc.roundedRect(innerX, sectionY - 1, contentWidth, attachHeight, 3, 3, 'F');
+                            doc.setDrawColor(40, 167, 69, 0.2);
+                            doc.setLineWidth(0.3);
+                            doc.roundedRect(innerX, sectionY - 1, contentWidth, attachHeight, 3, 3, 'S');
+                            doc.setFont(undefined, 'bold');
+                            doc.setTextColor(40, 167, 69);
+                            doc.setFontSize(10);
+                            doc.text(`Attachments (${update.photos.length})`, innerX + 5, sectionY + 5);
+                            sectionY += 12;
+                            
+                            // Photo grid for updates
+                            const photosPerRow = 3;
+                            const photoWidth = 50;
+                            const photoHeight = 35;
+                            const photoSpacing = 10;
+                            
+                            for (let j = 0; j < update.photos.length; j++) {
+                                const photo = update.photos[j];
+                                const row = Math.floor(j / photosPerRow);
+                                const col = j % photosPerRow;
+                                const photoX = innerX + (col * (photoWidth + photoSpacing));
+                                const photoY = sectionY + (row * (photoHeight + 12));
+                                
+                                if (photoY > 200) {
+                                    doc.addPage();
+                                    pageNumber++;
+                                    yPosition = 20;
+                                    
+                                    doc.setFillColor(102, 126, 234);
+                                    doc.rect(0, 0, 210, 25, 'F');
+                                    doc.setTextColor(255, 255, 255);
+                                    doc.setFontSize(16);
+                                    doc.setFont(undefined, 'bold');
+                                    doc.text('Food Safety Manager - Compliance Report', 105, 12, { align: 'center' });
+                                    doc.setFontSize(10);
+                                    doc.setFont(undefined, 'normal');
+                                    doc.text(`Page ${pageNumber}`, 105, 20, { align: 'center' });
+                                    yPosition = 40;
+                                    continue;
+                                }
+                                
+                                if (photo.isRaw) {
+                                    doc.setFillColor(40, 167, 69, 0.1);
+                                    doc.rect(photoX, photoY, photoWidth, photoHeight, 'F');
+                                    doc.setDrawColor(40, 167, 69);
+                                    doc.setLineWidth(0.5);
+                                    doc.rect(photoX, photoY, photoWidth, photoHeight, 'S');
+                                    
+                                    doc.setTextColor(40, 167, 69);
+                                    doc.setFontSize(8);
+                                    doc.setFont(undefined, 'bold');
+                                    doc.text('RAW', photoX + photoWidth/2, photoY + 15, { align: 'center' });
+                                    doc.setFont(undefined, 'normal');
+                                    doc.setFontSize(7);
+                                    doc.text(photo.name.split('.').pop().toUpperCase(), photoX + photoWidth/2, photoY + 25, { align: 'center' });
+                                    doc.setFontSize(6);
+                                    const displayName = photo.name.length > 15 ? photo.name.substring(0, 15) + '...' : photo.name;
+                                    doc.text(displayName, photoX + photoWidth/2, photoY + 32, { align: 'center' });
+                                } else {
+                                    try {
+                                        const img = new Image();
+                                        img.crossOrigin = 'anonymous';
+                                        
+                                        await new Promise((resolve, reject) => {
+                                            img.onload = resolve;
+                                            img.onerror = reject;
+                                            img.src = photo.data;
+                                        });
+                                        
+                                        const canvas = document.createElement('canvas');
+                                        const ctx = canvas.getContext('2d');
+                                        canvas.width = img.width;
+                                        canvas.height = img.height;
+                                        ctx.drawImage(img, 0, 0);
+                                        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                                        
+                                        doc.addImage(imgData, 'JPEG', photoX, photoY, photoWidth, photoHeight);
+                                        
+                                        doc.setDrawColor(40, 167, 69);
+                                        doc.setLineWidth(0.3);
+                                        doc.rect(photoX, photoY, photoWidth, photoHeight, 'S');
+                                        
+                                        doc.setTextColor(44, 62, 80);
+                                        doc.setFontSize(7);
+                                        const displayName = photo.name.length > 15 ? photo.name.substring(0, 15) + '...' : photo.name;
+                                        doc.text(displayName, photoX + photoWidth/2, photoY + photoHeight + 6, { align: 'center' });
+                                        
+                                    } catch (error) {
+                                        console.error('Error adding update image to PDF:', error);
+                                        doc.setFillColor(220, 53, 69, 0.1);
+                                        doc.rect(photoX, photoY, photoWidth, photoHeight, 'F');
+                                        doc.setDrawColor(220, 53, 69);
+                                        doc.setLineWidth(0.5);
+                                        doc.rect(photoX, photoY, photoWidth, photoHeight, 'S');
+                                        doc.setTextColor(220, 53, 69);
+                                        doc.setFontSize(6);
+                                        doc.text('Image Error', photoX + photoWidth/2, photoY + photoHeight/2, { align: 'center' });
+                                        doc.text(photo.name.substring(0, 10) + '...', photoX + photoWidth/2, photoY + photoHeight + 4, { align: 'center' });
+                                    }
+                                }
+                            }
+                            
+                            const totalRows = Math.ceil(update.photos.length / photosPerRow);
+                            sectionY += (totalRows * (photoHeight + 12)) + 10;
+                        }
+                        
+                        // Add separator line between updates
+                        doc.setDrawColor(40, 167, 69, 0.2);
+                        doc.setLineWidth(0.5);
+                        doc.line(innerX, sectionY + 2, innerX + contentWidth, sectionY + 2);
+                        sectionY += 15;
+                        
+                        // Update main yPosition for next update
+                        yPosition = sectionY;
+                    }
                 }
                 
                 // Add professional footer - more compact
@@ -3767,12 +4058,12 @@
                 alert('❌ Please sign in to sync data');
                 return;
             }
-            
+
             if (!isOnline) {
                 alert('📴 No internet connection. Please check your connection and try again.');
                 return;
             }
-            
+
             if (!isFirebaseInitialized) {
                 alert('❌ Firebase not initialized. Please refresh the page and try again.');
                 return;
@@ -4246,11 +4537,11 @@
 
         // Dashboard updates
         function updateDashboard() {
-            const thisMonth = new Date();
-            thisMonth.setDate(1);
+                const thisMonth = new Date();
+                thisMonth.setDate(1);
             
-            const thisMonthRecords = records.filter(r => new Date(r.date) >= thisMonth);
-            const highPriorityRecords = records.filter(r => r.priority === 'high');
+                const thisMonthRecords = records.filter(r => new Date(r.date) >= thisMonth);
+                const highPriorityRecords = records.filter(r => r.priority === 'high');
             const recordsWithPhotos = records.filter(r => r.photos.length > 0);
             const staffWithWarnings = Object.values(staffWarnings).filter(staff => staff.count > 0).length;
             
@@ -4472,7 +4763,7 @@
                             console.error('Error deleting from Firebase:', error);
                             alert('Failed to delete record. Please try again.');
                         });
-                } else {
+                    } else {
                     console.log('Deleting locally only');
                     // Fallback for non-authenticated users
                     records = records.filter(r => r.id !== recordId);
@@ -4513,7 +4804,8 @@
                 'health-safety': 'Health & Safety',
                 'cleaning': 'Cleaning Standards',
                 'training': 'Training Required',
-                'equipment': 'Equipment Issue'
+                'equipment': 'Equipment Issue',
+                'improvement': 'Improvement Made'
             };
             return names[category] || category;
         }
@@ -5543,112 +5835,13 @@
         }
 
         // Staff selection for updates
-        function setupUpdateStaffSelector() {
-            const input = document.getElementById('update-staff-input');
-            const dropdown = document.getElementById('update-staff-dropdown');
-            
-            input.addEventListener('input', function() {
-                const query = this.value.toLowerCase();
-                if (query.length < 2) {
-                    dropdown.style.display = 'none';
-                    return;
-                }
-                
-                const filteredStaff = staffMembers.filter(staff => 
-                    staff.name.toLowerCase().includes(query)
-                );
-                
-                if (filteredStaff.length > 0) {
-                    dropdown.innerHTML = filteredStaff.map(staff => 
-                        `<div class="staff-option" onclick="selectUpdateStaff('${staff.name}')">👤 ${staff.name}</div>`
-                    ).join('');
-                    dropdown.style.display = 'block';
-                } else {
-                    dropdown.style.display = 'none';
-                }
-            });
-            
-            input.addEventListener('blur', function() {
-                setTimeout(() => {
-                    dropdown.style.display = 'none';
-                }, 200);
-            });
-        }
 
-        function selectUpdateStaff(staffName) {
-            if (!updateSelectedStaffMembers.some(s => s.name === staffName)) {
-                const staffMember = staffMembers.find(s => s.name === staffName) || { id: Date.now().toString(), name: staffName };
-                updateSelectedStaffMembers.push(staffMember);
-                updateUpdateSelectedStaffTags();
-                updateUpdateHiddenInput();
-            }
-            document.getElementById('update-staff-input').value = '';
-            document.getElementById('update-staff-dropdown').style.display = 'none';
-        }
 
-        function updateUpdateSelectedStaffTags() {
-            const container = document.getElementById('update-selected-staff-tags');
-            container.innerHTML = updateSelectedStaffMembers.map(staff => 
-                `<span class="staff-tag">👤 ${staff.name} <button onclick="removeUpdateStaff('${staff.name}')" class="remove-staff">×</button></span>`
-            ).join('');
-        }
 
-        function removeUpdateStaff(staffName) {
-            updateSelectedStaffMembers = updateSelectedStaffMembers.filter(s => s.name !== staffName);
-            updateUpdateSelectedStaffTags();
-            updateUpdateHiddenInput();
-        }
 
-        function updateUpdateHiddenInput() {
-            const staffNames = updateSelectedStaffMembers.map(s => s.name).join(', ');
-            document.getElementById('update-staff').value = staffNames;
-        }
 
-        function clearUpdateStaffSelection() {
-            updateSelectedStaffMembers = [];
-            updateUpdateSelectedStaffTags();
-            updateUpdateHiddenInput();
-        }
 
-        // Photo handling for updates
-        function handleUpdatePhotoUpload(event) {
-            const files = Array.from(event.target.files);
-            files.forEach(file => {
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        updatePhotos.push({
-                            name: file.name,
-                            data: e.target.result,
-                            size: file.size
-                        });
-                        updateUpdatePhotoPreview();
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
 
-        function updateUpdatePhotoPreview() {
-            const container = document.getElementById('update-photo-preview');
-            container.innerHTML = updatePhotos.map((photo, index) => `
-                <div class="photo-item">
-                    <img src="${photo.data}" alt="Photo ${index + 1}" onclick="viewUpdatePhoto(${index})">
-                    <button onclick="removeUpdatePhoto(${index})" class="remove-photo">×</button>
-                </div>
-            `).join('');
-        }
-
-        function removeUpdatePhoto(index) {
-            updatePhotos.splice(index, 1);
-            updateUpdatePhotoPreview();
-        }
-
-        function viewUpdatePhoto(index) {
-            const photo = updatePhotos[index];
-            document.getElementById('modal-image').src = photo.data;
-            document.getElementById('photo-modal').style.display = 'block';
-        }
 
         // Voice input for updates
         let updateRecognition = null;
@@ -5873,36 +6066,9 @@
 
         // Setup update form event listeners
         document.addEventListener('DOMContentLoaded', function() {
-            // Setup update form
-            const updateForm = document.getElementById('update-form');
-            if (updateForm) {
-                updateForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    
-                    const formData = {
-                        id: Date.now().toString(),
-                        date: new Date().toISOString(),
-                        category: document.getElementById('update-category').value,
-                        impact: document.getElementById('update-impact').value,
-                        staffMember: document.getElementById('update-staff').value,
-                        location: document.getElementById('update-location').value,
-                        description: document.getElementById('update-description').value,
-                        photos: [...updatePhotos]
-                    };
 
-                    try {
-                        await saveUpdateToFirebase(formData);
-                        clearUpdateForm();
-                        showQuickMessage('✅ Improvement saved successfully!');
-                    } catch (error) {
-                        console.error('Error saving improvement:', error);
-                        alert('❌ Failed to save improvement. Please try again.');
-                    }
-                });
-            }
 
-            // Setup update staff selector
-            setupUpdateStaffSelector();
+
         });
 
         // Add CSS animations
@@ -5968,6 +6134,7 @@
             // Ctrl/Cmd + H/M/L: Quick priority selection
             if ((e.ctrlKey || e.metaKey) && (e.key === 'h' || e.key === 'm' || e.key === 'l')) {
                 const prioritySelect = document.getElementById('priority');
+                
                 if (prioritySelect && document.getElementById('add-record').classList.contains('active')) {
                     e.preventDefault();
                     const priority = e.key === 'h' ? 'high' : e.key === 'm' ? 'medium' : 'low';
@@ -5975,6 +6142,29 @@
                     updateSmartDefaults();
                     showQuickMessage(`🎯 Priority set: ${priority.toUpperCase()}`);
                 }
+            }
+            
+            // Ctrl/Cmd + 1-6: Quick category/type selection for updates
+            if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '6') {
+                const categorySelect = document.getElementById('category');
+                
+                if (categorySelect && document.getElementById('add-record').classList.contains('active')) {
+                    e.preventDefault();
+                    const categories = ['', 'food-safety', 'health-safety', 'cleaning', 'training', 'equipment'];
+                    const index = parseInt(e.key);
+                    if (categories[index]) {
+                        categorySelect.value = categories[index];
+                        updateSmartDefaults();
+                        showQuickMessage(`📋 Category set: ${getCategoryName(categories[index])}`);
+                    }
+                }
+            }
+            
+            // Ctrl/Cmd + Shift + I: Quick improvement
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') {
+                e.preventDefault();
+                showSection('improvements');
+                document.getElementById('improvement-description').focus();
             }
         });
 
@@ -6215,8 +6405,243 @@
             // ... existing code ...
             setupQuickEntryEnhancements();
             setupFormAutoCompletion();
+            setupUpdateFormEnhancements();
             addKeyboardShortcutsInfo();
             enhancedSmartDefaults();
+        });
+
+        // Enhanced Updates form functionality
+        function setupUpdateFormEnhancements() {
+            // Auto-focus description field when update form is shown
+            const updateDescription = document.getElementById('update-description');
+            if (updateDescription) {
+                updateDescription.addEventListener('focus', function() {
+                    // Auto-populate with common phrases based on time of day
+                    const hour = new Date().getHours();
+                    let timeBasedSuggestion = '';
+                    
+                    if (hour >= 6 && hour < 12) {
+                        timeBasedSuggestion = 'Morning improvement: ';
+                    } else if (hour >= 12 && hour < 17) {
+                        timeBasedSuggestion = 'Afternoon enhancement: ';
+                    } else if (hour >= 17 && hour < 22) {
+                        timeBasedSuggestion = 'Evening update: ';
+                    } else {
+                        timeBasedSuggestion = 'Night shift improvement: ';
+                    }
+                    
+                    if (!this.value) {
+                        this.value = timeBasedSuggestion;
+                        this.setSelectionRange(timeBasedSuggestion.length, timeBasedSuggestion.length);
+                    }
+                });
+            }
+            
+            // Enhanced location detection for updates
+            setupUpdateLocationDetection();
+            
+            // Auto-completion for update descriptions
+            setupUpdateDescriptionAutoCompletion();
+        }
+
+        // Location detection for updates
+        function setupUpdateLocationDetection() {
+            const locationInput = document.getElementById('update-location');
+            if (locationInput) {
+                locationInput.addEventListener('input', function() {
+                    const value = this.value.toLowerCase();
+                    
+                    // Auto-suggest based on partial input for improvements
+                    const suggestions = {
+                        'kit': 'Kitchen',
+                        'prep': 'Prep Area',
+                        'stor': 'Storage',
+                        'ref': 'Refrigeration',
+                        'free': 'Freezer',
+                        'dish': 'Dishwashing Area',
+                        'serv': 'Service Area',
+                        'dining': 'Dining Room',
+                        'bath': 'Bathroom',
+                        'equip': 'Equipment Area',
+                        'train': 'Training Room',
+                        'office': 'Office Area'
+                    };
+                    
+                    for (const [key, suggestion] of Object.entries(suggestions)) {
+                        if (value.includes(key) && value.length < suggestion.length) {
+                            this.value = suggestion;
+                            this.setSelectionRange(value.length, suggestion.length);
+                            break;
+                        }
+                    }
+                });
+            }
+        }
+
+        // Auto-completion for update descriptions
+        function setupUpdateDescriptionAutoCompletion() {
+            const descriptionField = document.getElementById('update-description');
+            if (descriptionField) {
+                descriptionField.addEventListener('input', function() {
+                    const value = this.value.toLowerCase();
+                    
+                    // Auto-complete common improvement phrases
+                    const completions = {
+                        'impro': 'improvement',
+                        'enhanc': 'enhancement',
+                        'upgrad': 'upgrade',
+                        'instal': 'installation',
+                        'main': 'maintenance',
+                        'clean': 'cleaning',
+                        'train': 'training',
+                        'proc': 'procedure',
+                        'equip': 'equipment',
+                        'saf': 'safety',
+                        'compl': 'compliance'
+                    };
+                    
+                    for (const [key, completion] of Object.entries(completions)) {
+                        if (value.endsWith(key + ' ') && !value.includes(completion)) {
+                            const before = this.value.substring(0, this.value.length - key.length - 1);
+                            this.value = before + completion + ' ';
+                            this.setSelectionRange(this.value.length, this.value.length);
+                            break;
+                        }
+                    }
+                });
+            }
+        }
+
+        // Draft functionality for updates
+        function saveUpdateAsDraft() {
+            const formData = {
+                category: document.getElementById('update-category').value,
+                impact: document.getElementById('update-impact').value,
+                staffMember: document.getElementById('update-staff').value,
+                location: document.getElementById('update-location').value,
+                description: document.getElementById('update-description').value,
+                photos: [...updateSelectedPhotos]
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('draftUpdate', JSON.stringify(formData));
+            showQuickMessage('📝 Update draft saved! You can continue later.');
+        }
+
+        function loadUpdateDraft() {
+            const draft = localStorage.getItem('draftUpdate');
+            if (draft) {
+                const formData = JSON.parse(draft);
+                document.getElementById('update-category').value = formData.category || '';
+                document.getElementById('update-impact').value = formData.impact || '';
+                document.getElementById('update-location').value = formData.location || '';
+                document.getElementById('update-description').value = formData.description || '';
+                
+                if (formData.photos) {
+                    updateSelectedPhotos = [...formData.photos];
+                    updateUpdatePhotoPreview();
+                }
+                
+                showQuickMessage('📝 Update draft loaded!');
+            }
+        }
+
+        function clearUpdateForm() {
+            if (confirm('Are you sure you want to clear the update form? This will also clear any saved draft.')) {
+                document.getElementById('update-form').reset();
+                updateSelectedPhotos = [];
+                updateUpdatePhotoPreview();
+                clearUpdateStaffSelection();
+                localStorage.removeItem('draftUpdate');
+                showQuickMessage('🗑️ Update form cleared');
+            }
+        }
+
+        // Improvement form functions
+        function saveImprovementAsDraft() {
+            const formData = {
+                category: document.getElementById('improvement-category').value,
+                priority: document.getElementById('improvement-priority').value,
+                staffMember: document.getElementById('improvement-staff').value,
+                location: document.getElementById('improvement-location').value,
+                description: document.getElementById('improvement-description').value,
+                photos: [...selectedPhotos]
+            };
+            
+            localStorage.setItem('draftImprovement', JSON.stringify(formData));
+            showQuickMessage('📝 Improvement draft saved! You can continue later.');
+        }
+
+        function loadImprovementDraft() {
+            const draft = localStorage.getItem('draftImprovement');
+            if (draft) {
+                const formData = JSON.parse(draft);
+                document.getElementById('improvement-category').value = formData.category || 'improvement';
+                document.getElementById('improvement-priority').value = formData.priority || '';
+                document.getElementById('improvement-location').value = formData.location || '';
+                document.getElementById('improvement-description').value = formData.description || '';
+                
+                if (formData.photos) {
+                    selectedPhotos = [...formData.photos];
+                    updatePhotoPreview();
+                }
+                
+                showQuickMessage('📝 Improvement draft loaded!');
+            }
+        }
+
+        function clearImprovementForm() {
+            if (confirm('Are you sure you want to clear the improvement form? This will also clear any saved draft.')) {
+                document.getElementById('improvement-form').reset();
+                document.getElementById('improvement-category').value = 'improvement';
+                selectedPhotos = [];
+                updatePhotoPreview();
+                clearStaffSelection();
+                localStorage.removeItem('draftImprovement');
+                showQuickMessage('🗑️ Improvement form cleared');
+            }
+        }
+
+        // Improvement form submission
+        document.getElementById('improvement-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentUser) {
+                alert('❌ Please sign in to save improvements');
+                return;
+            }
+            
+            const record = {
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                category: document.getElementById('improvement-category').value,
+                priority: document.getElementById('improvement-priority').value,
+                staffMember: document.getElementById('improvement-staff').value,
+                location: document.getElementById('improvement-location').value,
+                description: document.getElementById('improvement-description').value,
+                photos: [...selectedPhotos],
+                userId: currentUser.uid,
+                userEmail: currentUser.email
+            };
+            
+            // Save to Firebase
+            await saveRecordToFirebase(record);
+            
+            // Update staff warning system
+            updateStaffWarning(record.staffMember);
+            
+            // Reset form
+            this.reset();
+            document.getElementById('improvement-category').value = 'improvement';
+            selectedPhotos = [];
+            updatePhotoPreview();
+            clearStaffSelection();
+            
+            // Switch to dashboard
+            showSection('dashboard');
+            document.querySelector('.nav-btn').classList.add('active');
+            
+            showQuickMessage('✅ Improvement saved successfully!');
         });
     </script>
 </body>
