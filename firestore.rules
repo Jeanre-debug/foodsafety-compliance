@@ -1,14 +1,32 @@
 rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    // Allow users to read and write their own photos
-    match /users/{userId}/{allPaths=**} {
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow users to read and write their own data
+    match /users/{userId} {
+      // Allow access to user's own document
       allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow access to user's subcollections
+      match /{collection}/{document} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
     
-    // Allow access to user-specific photos (for backward compatibility)
-    match /photos/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // Allow access to user-specific collections (for backward compatibility)
+    match /safetyRecords/{document} {
+      allow read, write: if request.auth != null && (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    match /staffWarnings/{document} {
+      allow read, write: if request.auth != null && (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    match /staffMembers/{document} {
+      allow read, write: if request.auth != null && (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    match /updates/{document} {
+      allow read, write: if request.auth != null && (resource == null || resource.data.userId == request.auth.uid);
     }
   }
 } 
